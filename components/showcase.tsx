@@ -23,39 +23,12 @@ const song = {
     raw_progress_ms: 120000,
 };
 
-// Function to generate overlay URLs
-const generateOverlayURL = (
-    style: string,
-    theme: string,
-    showTimestamp?: boolean
-) => {
-    const base = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "";
-    const params = new URLSearchParams();
-
-    if (theme !== "default") params.set("theme", theme);
-    if (style !== "default") params.set("style", style);
-    if (showTimestamp) params.set("timestamp", "true");
-
-    return `${base}/overlay${params.toString() ? `?${params.toString()}` : ""}`;
-};
-
-export default function ThemeShowcase() {
+export default function ThemeShowcase({ rootDomain }: { rootDomain: string }) {
     const [clientLoad, setClientLoad] = useState(false);
     const [showTimestamp, setShowTimestamp] = useState(false); // Toggle state
-    const [rootDomain, setRootDomain] = useState("");
 
     useEffect(() => {
         setClientLoad(true); // Ensures rendering on client side
-
-        // Fetch environment variables from our API
-        fetch("/api/env")
-            .then((res) => res.json())
-            .then((data) => {
-                setRootDomain(data.rootDomain);
-            })
-            .catch((err) => {
-                console.error("Failed to fetch environment variables:", err);
-            });
     }, []);
 
     // Function to generate overlay URLs with runtime values

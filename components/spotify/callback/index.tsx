@@ -1,25 +1,23 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
-export default function Page({
+export default function SpotifyCallback({
     searchParams,
+    rootDomain,
 }: {
-    searchParams: Promise<{ code?: string }>;
+    rootDomain: string;
+    searchParams: { code?: string };
 }) {
-    const SearchParams = use(searchParams);
     const [copied, setCopied] = useState(false);
     const handleCopy = () => {
-        if (SearchParams.code) {
-            navigator.clipboard.writeText(SearchParams.code);
-            toast.success("✅ Code copied! Paste it into OBS.");
+        if (searchParams.code) {
+            navigator.clipboard.writeText(searchParams.code); // Copy the code
+            toast.success(
+                "✅ Code copied! Paste it into the input box on the overlay page."
+            );
             setCopied(true);
-
-            // Close the window after a short delay
-            setTimeout(() => {
-                window.close();
-            }, 3000);
         }
     };
 
@@ -47,11 +45,20 @@ export default function Page({
                         and click "OK".
                     </li>
                     <li>
-                        Paste the copied link into the{" "}
+                        Paste the following URL into the{" "}
                         <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
-                            https://sync-music.thehopton.work/overlay
+                            URL input box
                         </code>{" "}
-                        field.
+                        in the Browser Source settings:
+                        <br />
+                        <strong className="text-white">
+                            {rootDomain}/overlay
+                        </strong>
+                    </li>
+                    <li>
+                        After pasting the URL, copy the code below and paste it
+                        into the input box that appears on the overlay page
+                        inside OBS.
                     </li>
                     <li>
                         Adjust width & height (e.g.,{" "}
@@ -72,12 +79,8 @@ export default function Page({
                     onClick={handleCopy}
                     disabled={copied}
                 >
-                    {copied ? "✅ Copied!" : "Copy Link"}
+                    {copied ? "✅ Code Copied!" : "Copy Code"}
                 </button>
-
-                <p className="mt-3 text-xs text-zinc-400">
-                    This page will close automatically after copying.
-                </p>
             </div>
         </main>
     );

@@ -7,7 +7,7 @@ export default function Home() {
             <div className="flex flex-col items-center justify-center">
                 <SpotifyLogin />
             </div>
-            <ThemeShowcase />
+            <ThemeShowcase rootDomain={process.env.ROOT_DOMAIN || ""} />
         </main>
     );
 }
