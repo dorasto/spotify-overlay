@@ -2,6 +2,9 @@ name: Deploy
 
 # Defines when this workflow will run
 on:
+    push:
+        branches:
+            - main
     pull_request:
         # Only trigger on PRs targeting main branch
         branches:
