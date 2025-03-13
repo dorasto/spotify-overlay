@@ -1,0 +1,11 @@
+version: "3"
+services:
+    spotify-overlay:
+        image: ghcr.io/dorasto/spotify-overlay:latest
+        pull_policy: always
+        ports:
+            - "${PORT:-3000}:3000"
+        environment:
+            - NEXT_PUBLIC_ROOT_DOMAIN
+            - SPOTIFY_CLIENT_SECRET
+            - SPOTIFY_CLIENT_ID

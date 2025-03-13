@@ -1,0 +1,7 @@
+{
+    "typescript.preferences.autoImportFileExcludePatterns": [
+        "@radix-ui",
+        "react-day-picker",
+        "recharts"
+    ]
+}
