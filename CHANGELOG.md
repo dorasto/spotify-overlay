@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/dorasto/spotify-overlay/compare/v1.0.4...v1.0.5) (2025-03-13)
+
+
+### Bug Fixes
+
+* API for fetching root domain env ([4910cdd](https://github.com/dorasto/spotify-overlay/commit/4910cdd102f8039217e8bdf32d0b773784527622))
+
 ## [1.0.4](https://github.com/dorasto/spotify-overlay/compare/v1.0.3...v1.0.4) (2025-03-13)
 
 
