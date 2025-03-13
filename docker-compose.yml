@@ -7,5 +7,6 @@ services:
             - "${PORT:-3000}:3000"
         environment:
             - NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN:-localhost}
+            - ROOT_DOMAIN=${ROOT_DOMAIN:-localhost}
             - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
             - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}

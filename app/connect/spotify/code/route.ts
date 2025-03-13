@@ -12,8 +12,7 @@ export async function GET(req: Request) {
 
     const client_id = process.env.SPOTIFY_CLIENT_ID!;
     const client_secret = process.env.SPOTIFY_CLIENT_SECRET!;
-    const redirect_uri =
-        process.env.NEXT_PUBLIC_ROOT_DOMAIN + "/connect/spotify/callback";
+    const redirect_uri = process.env.ROOT_DOMAIN + "/connect/spotify/callback";
 
     const tokenUrl = "https://accounts.spotify.com/api/token";
 

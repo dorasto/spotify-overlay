@@ -42,10 +42,37 @@ const generateOverlayURL = (
 export default function ThemeShowcase() {
     const [clientLoad, setClientLoad] = useState(false);
     const [showTimestamp, setShowTimestamp] = useState(false); // Toggle state
+    const [rootDomain, setRootDomain] = useState("");
 
     useEffect(() => {
         setClientLoad(true); // Ensures rendering on client side
+
+        // Fetch environment variables from our API
+        fetch("/api/env")
+            .then((res) => res.json())
+            .then((data) => {
+                setRootDomain(data.rootDomain);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch environment variables:", err);
+            });
     }, []);
+
+    // Function to generate overlay URLs with runtime values
+    const generateOverlayURL = (
+        style: string,
+        theme: string,
+        showTimestamp?: boolean
+    ) => {
+        const base = rootDomain; // Use the state variable instead of process.env
+        const params = new URLSearchParams();
+
+        if (theme !== "default") params.set("theme", theme);
+        if (style !== "default") params.set("style", style);
+        if (showTimestamp) params.set("timestamp", "true");
+
+        return `${base}/overlay${params.toString() ? `?${params.toString()}` : ""}`;
+    };
 
     if (!clientLoad) return <div className="h-screen bg-zinc-900"></div>;
 

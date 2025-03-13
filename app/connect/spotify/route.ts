@@ -9,8 +9,7 @@ export async function GET() {
     ].join(" ");
 
     const client_id = process.env.SPOTIFY_CLIENT_ID;
-    const redirect_uri =
-        process.env.NEXT_PUBLIC_ROOT_DOMAIN + "/connect/spotify/callback";
+    const redirect_uri = process.env.ROOT_DOMAIN + "/connect/spotify/callback";
 
     if (!client_id || !redirect_uri) {
         return NextResponse.json(

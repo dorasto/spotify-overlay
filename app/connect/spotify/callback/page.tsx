@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function Page({
@@ -10,6 +10,18 @@ export default function Page({
 }) {
     const SearchParams = use(searchParams);
     const [copied, setCopied] = useState(false);
+    const [rootDomain, setRootDomain] = useState("");
+    useEffect(() => {
+        // Fetch environment variables from our API
+        fetch("/api/env")
+            .then((res) => res.json())
+            .then((data) => {
+                setRootDomain(data.rootDomain);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch environment variables:", err);
+            });
+    }, []);
 
     const handleCopy = () => {
         if (SearchParams.code) {
@@ -52,7 +64,7 @@ export default function Page({
                         in the Browser Source settings:
                         <br />
                         <strong className="text-white">
-                            {process.env.NEXT_PUBLIC_ROOT_DOMAIN}/overlay
+                            {rootDomain}/overlay
                         </strong>
                     </li>
                     <li>
