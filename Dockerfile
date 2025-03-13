@@ -15,7 +15,6 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-COPY .env /app/.env
 
 # Add these environment settings here
 ENV NEXT_PUBLIC_ROOT_DOMAIN=NEXT_PUBLIC_ROOT_DOMAIN
