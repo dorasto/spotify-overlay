@@ -1,6 +1,6 @@
 {
   "name": "spotify-overlay",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "description": "A Spotify overlay for your stream",
   "repository": "https://github.com/dorasto/spotify-overlay",

@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/dorasto/spotify-overlay/compare/v1.0.3...v1.0.4) (2025-03-13)
+
+
+### Bug Fixes
+
+* root domain and api ([d8cf095](https://github.com/dorasto/spotify-overlay/commit/d8cf095899475c59fb29b1d6b1e0e0e34c23de87))
+
 ## [1.0.3](https://github.com/dorasto/spotify-overlay/compare/v1.0.2...v1.0.3) (2025-03-13)
 
 
