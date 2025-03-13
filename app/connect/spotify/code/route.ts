@@ -62,7 +62,9 @@ export async function GET(req: Request) {
             path: "/",
         });
 
-        return NextResponse.redirect(new URL("/storage", req.url)); // Fixes redirect issue
+        return NextResponse.redirect(
+            new URL("/storage", process.env.ROOT_DOMAIN)
+        ); // Fixes redirect issue
     } catch (error: any) {
         return NextResponse.json(
             { error: "Internal server error", details: error.toString() },
