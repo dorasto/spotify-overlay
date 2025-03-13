@@ -4,8 +4,6 @@ import { randomBytes } from "crypto";
 export async function GET() {
     const state = randomBytes(16).toString("hex");
     const scope = [
-        "user-read-email",
-        "user-read-private",
         "user-read-playback-state",
         "user-read-currently-playing",
     ].join(" ");
