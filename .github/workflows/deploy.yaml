@@ -20,7 +20,7 @@ jobs:
         permissions:
             contents: write
         # Use custom Blacksmith runner with ARM architecture
-        runs-on: [blacksmith-8vcpu-ubuntu-2204-arm]
+        runs-on: ubuntu-24.04-arm
         name: Build Docker image
         steps:
             # Step 1: Get code from repository
