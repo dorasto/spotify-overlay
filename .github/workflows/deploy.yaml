@@ -42,23 +42,19 @@ jobs:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: npx semantic-release
 
-    build_image:
+    # Get version info - separate job to avoid repeated work
+    get_version:
         needs: release
-        permissions:
-            contents: write
-            packages: write
+
         runs-on: ubuntu-24.04-arm
-        name: Build Docker image
+        outputs:
+            version: ${{ steps.package-version.outputs.VERSION }}
+            is_prerelease: ${{ steps.prerelease_check.outputs.IS_PRERELEASE }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
               with:
-                  ref: main # Ensure we checkout the updated version
-
-            - name: Setup Node.js
-              uses: useblacksmith/setup-node@v5.0.4
-              with:
-                  node-version: "20"
+                  ref: main
 
             - name: Read version from package.json
               id: package-version
@@ -74,10 +70,54 @@ jobs:
                     echo "IS_PRERELEASE=false" >> $GITHUB_OUTPUT
                   fi
 
+    # Build for AMD64 architecture
+    build_amd64:
+        needs: get_version
+        permissions:
+            contents: read
+            packages: write
+        runs-on: ubuntu-latest
+        name: Build Docker image (amd64)
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: main
+
             - name: Login to GitHub Container Registry
-              id: docker_login
-              run: |
-                  echo ${{ secrets.GHCR_LOGIN }} | docker login ghcr.io -u doras-to-admin --password-stdin
+
+              run: echo ${{ secrets.GHCR_LOGIN }} | docker login ghcr.io -u doras-to-admin --password-stdin
+
+            - name: Set up Docker Buildx
+              uses: docker/setup-buildx-action@v3
+
+            - name: Build and push amd64 Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: .
+                  push: true
+                  platforms: linux/amd64
+                  tags: |
+                      ghcr.io/dorasto/spotify-overlay:v${{ needs.get_version.outputs.version }}-amd64
+                  cache-from: type=gha,scope=amd64
+                  cache-to: type=gha,mode=max,scope=amd64
+
+    # Build for ARM64 architecture
+    build_arm64:
+        needs: get_version
+        permissions:
+            contents: read
+            packages: write
+        runs-on: ubuntu-24.04-arm
+        name: Build Docker image (arm64)
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                  ref: main
+
+            - name: Login to GitHub Container Registry
+              run: echo ${{ secrets.GHCR_LOGIN }} | docker login ghcr.io -u doras-to-admin --password-stdin
 
             - name: Set up QEMU
               uses: docker/setup-qemu-action@v3
@@ -85,18 +125,34 @@ jobs:
             - name: Set up Docker Buildx
               uses: docker/setup-buildx-action@v3
 
-            - name: Build and push multi-architecture Docker image
-              id: docker_build
+            - name: Build and push arm64 Docker image
               uses: docker/build-push-action@v5
               with:
                   context: .
                   push: true
-                  platforms: linux/amd64,linux/arm64
+                  platforms: linux/arm64
                   tags: |
-                      ghcr.io/dorasto/spotify-overlay:latest
-                      ghcr.io/dorasto/spotify-overlay:v${{ steps.package-version.outputs.VERSION }}
-                  cache-from: type=gha
-                  cache-to: type=gha,mode=max
+                      ghcr.io/dorasto/spotify-overlay:v${{ needs.get_version.outputs.version }}-arm64
+                  cache-from: type=gha,scope=arm64
+                  cache-to: type=gha,mode=max,scope=arm64
+
+    # Create and publish the multi-arch manifest
+    manifest:
+        needs: [get_version, build_amd64, build_arm64]
+        permissions:
+            contents: read
+            packages: write
+        runs-on: ubuntu-24.04-arm
+        name: Create and push multi-arch manifest
+        steps:
+            - name: Login to GitHub Container Registry
+              run: echo ${{ secrets.GHCR_LOGIN }} | docker login ghcr.io -u doras-to-admin --password-stdin
+
+            - name: Create manifest list and push
+              run: |
+                  docker buildx imagetools create -t ghcr.io/dorasto/spotify-overlay:latest -t ghcr.io/dorasto/spotify-overlay:v${{ needs.get_version.outputs.version }} \
+                    ghcr.io/dorasto/spotify-overlay:v${{ needs.get_version.outputs.version }}-amd64 \
+                    ghcr.io/dorasto/spotify-overlay:v${{ needs.get_version.outputs.version }}-arm64
 
             - name: Trigger Coolify deployment
               run: |
