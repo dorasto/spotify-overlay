@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/dorasto/spotify-overlay/compare/v1.0.2...v1.0.3) (2025-03-13)
+
+
+### Bug Fixes
+
+* update variables in compose ([fd92c07](https://github.com/dorasto/spotify-overlay/commit/fd92c07714a7707dd9a2c79df25f785c7ca2595c))
+
 ## [1.0.2](https://github.com/dorasto/spotify-overlay/compare/v1.0.1...v1.0.2) (2025-03-13)
 
 
