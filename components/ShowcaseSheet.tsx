@@ -19,17 +19,17 @@ export default function ShowcaseSheet() {
                     <ExpandIcon />
                 </Button>
             </SheetTrigger>
-            <SheetContent className="w-1/3 overflow-y-scroll sm:w-1/3 sm:max-w-[33vw]">
-                <SheetHeader>
+            <SheetContent className="w-full overflow-y-auto p-0 sm:w-full sm:max-w-[100vw]">
+                <SheetHeader className="sticky top-0 z-40 bg-background p-3">
                     <SheetTitle>Explore</SheetTitle>
                     <SheetDescription>
                         Explore other themes, and then update the URL inside OBS
                         with what you prefer
                     </SheetDescription>
-                    <div className="">
-                        <ThemeShowcase dialog />
-                    </div>
                 </SheetHeader>
+                <div className="">
+                    <ThemeShowcase dialog />
+                </div>
             </SheetContent>
         </Sheet>
     );

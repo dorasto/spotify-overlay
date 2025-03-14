@@ -8,6 +8,7 @@ import { Switch } from "./ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
+import { Label } from "./ui/label";
 
 // Dummy song data
 const song = {
@@ -91,19 +92,38 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
     return (
         <div className="p-6">
             {/* Controls Row */}
-            <div className="mb-6 flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-x-6 sm:space-y-0">
+            <div className="mb-6 flex flex-col gap-2">
                 {/* Toggle Switch for Timestamp */}
-                <label className="flex cursor-pointer items-center">
-                    <span className="mr-2 text-white">Show Timestamp</span>
-                    <Switch
-                        checked={showTimestamp}
-                        onCheckedChange={setShowTimestamp}
-                    ></Switch>
-                </label>
+                <div className="flex w-fit flex-col">
+                    <Label>Timestamp</Label>
+                    <ToggleGroup
+                        type="single"
+                        className="rounded-md bg-muted p-1"
+                        value={showTimestamp ? "on" : "off"}
+                        onValueChange={(value) => {
+                            if (value === "on" || value === "off") {
+                                setShowTimestamp(value === "on");
+                            }
+                        }}
+                    >
+                        <ToggleGroupItem
+                            value="on"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            On
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="off"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            Off
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
 
                 {/* Toggle Group for View Mode */}
-                <div className="flex items-center">
-                    <span className="mr-2 text-white">View All As:</span>
+                <div className="flex w-fit flex-col">
+                    <Label>Theme</Label>
                     <ToggleGroup
                         type="single"
                         className="rounded-md bg-muted p-1"
