@@ -93,7 +93,6 @@ export default function SpotifyOverlayMiddle() {
 
     const fetchNowPlaying = async () => {
         if (!token) return;
-
         try {
             const response = await fetch(
                 "https://api.spotify.com/v1/me/player/currently-playing",
@@ -101,12 +100,9 @@ export default function SpotifyOverlayMiddle() {
                     headers: { Authorization: `Bearer ${token}` },
                 }
             );
-
-            if (response.ok) {
             if (response.status == 200) {
                 const data = await response.json();
                 setNowPlaying(data);
-            } else {
             } else if (response.status == 401) {
                 const data = await response.json();
                 if (data?.error?.message === "The access token expired") {
