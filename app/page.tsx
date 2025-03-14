@@ -3,7 +3,7 @@ import SpotifyLogin from "@/components/spotify-login";
 
 export default function Page() {
     return (
-        <main className="bg-zinc-900">
+        <main className="bg-background">
             <div className="flex flex-col items-center justify-center">
                 <SpotifyLogin />
             </div>

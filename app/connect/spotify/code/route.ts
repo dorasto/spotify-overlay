@@ -33,7 +33,10 @@ export async function GET(req: Request) {
 
         if (!response.ok) {
             return NextResponse.json(
-                { error: "Failed to fetch token" },
+                {
+                    error: "Failed to fetch token",
+                    details: await response.text(),
+                },
                 { status: 500 }
             );
         }
