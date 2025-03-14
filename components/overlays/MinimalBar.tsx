@@ -8,18 +8,20 @@ import { cn } from "@/lib/utils";
 
 interface Track {
     album: {
-        images: { url: string }[]; // Holds album images
-        name: string; // Album name
+        images: { url: string }[];
+        name: string;
     };
-    artists: { name: string }[]; // List of artists
-    name: string; // Track name
-    duration_ms: string; // Track duration
+    artists: { name: string }[];
+    name: string;
+    duration_ms: string;
+    raw_duration_ms: number;
 }
 
 interface NowPlaying {
-    is_playing: boolean; // Whether the track is playing
-    item: Track; // Current track details
-    progress_ms: string; // Progress of the track
+    is_playing: boolean;
+    item: Track;
+    progress_ms: string;
+    raw_progress_ms: number;
 }
 
 interface MinimalBarOverlayProps {
@@ -35,6 +37,9 @@ export default function MinimalBarOverlay({
     theme = "default", // Default theme is "default"
     showCase,
 }: MinimalBarOverlayProps) {
+    const progressPercentage =
+        (nowPlaying.raw_progress_ms / nowPlaying.item.raw_duration_ms) * 100;
+
     let currentTheme = themes[theme]; // Get the theme object from the imported themes
     if (!currentTheme) {
         console.error(`Theme "${theme}" not found.`);
@@ -51,7 +56,7 @@ export default function MinimalBarOverlay({
             <div className="mx-auto flex max-w-screen-lg items-center gap-3">
                 <div className="relative flex-shrink-0">
                     <Avatar
-                        className={`h-8 w-8 rounded-sm ${currentTheme.avatarBorder}`}
+                        className={`h-14 w-14 rounded-sm ${currentTheme.avatarBorder}`}
                     >
                         <AvatarImage
                             src={
@@ -86,20 +91,30 @@ export default function MinimalBarOverlay({
 
                 <div className="flex min-w-0 flex-grow flex-col">
                     <div className="overflow-hidden">
-                        <Marquee
-                            speed={100}
-                            gradient={false}
-                            play={nowPlaying.is_playing}
-                        >
-                            <h3
+                        {nowPlaying.is_playing ? (
+                            <Marquee
+                                speed={25}
+                                gradient={false}
+                                autoFill
+                                play={nowPlaying.is_playing}
                                 className={cn(
-                                    "pr-4 text-sm font-medium",
+                                    "text-lg font-bold",
+                                    currentTheme.text
+                                )}
+                            >
+                                {nowPlaying.item.name}{" "}
+                                <span className="mx-2">•</span>
+                            </Marquee>
+                        ) : (
+                            <p
+                                className={cn(
+                                    "text-lg font-bold",
                                     currentTheme.text
                                 )}
                             >
                                 {nowPlaying.item.name}
-                            </h3>
-                        </Marquee>
+                            </p>
+                        )}
                     </div>
                     <p className={cn("truncate text-xs", currentTheme.text)}>
                         {nowPlaying.item.artists
@@ -115,6 +130,14 @@ export default function MinimalBarOverlay({
                             currentTheme.timestampText
                         )}
                     >
+                        <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
+                            <div
+                                className={cn("h-full", currentTheme.badge)}
+                                style={{
+                                    width: `${progressPercentage}%`,
+                                }}
+                            />
+                        </div>
                         <span>{nowPlaying.progress_ms}</span>
                         <span>/</span>
                         <span>{nowPlaying.item.duration_ms}</span>

@@ -38,6 +38,10 @@ export default function SpotifyOverlayMiddle() {
         "theme",
         parseAsString.withDefault("default")
     );
+    const [autoHide] = useQueryState<any>(
+        "autoHide",
+        parseAsBoolean.withDefault(false)
+    );
     const [inputCode, setInputCode] = useState("");
 
     useEffect(() => {
@@ -99,13 +103,17 @@ export default function SpotifyOverlayMiddle() {
             );
 
             if (response.ok) {
+            if (response.status == 200) {
                 const data = await response.json();
                 setNowPlaying(data);
             } else {
+            } else if (response.status == 401) {
                 const data = await response.json();
                 if (data?.error?.message === "The access token expired") {
                     getRefreshToken();
                 }
+            } else {
+                console.log(response);
             }
         } catch (error) {
             console.error("Error fetching now playing:", error);
@@ -144,9 +152,11 @@ export default function SpotifyOverlayMiddle() {
                 nowPlaying={{
                     ...nowPlaying,
                     progress_ms: formatTime(nowPlaying.progress_ms),
+                    raw_progress_ms: nowPlaying.progress_ms,
                     item: {
                         ...nowPlaying.item,
                         duration_ms: formatTime(nowPlaying.item.duration_ms),
+                        raw_duration_ms: nowPlaying.item.duration_ms,
                     },
                 }}
                 showTimestamp={showTimestamp}
@@ -169,6 +179,7 @@ export default function SpotifyOverlayMiddle() {
                 }}
                 showTimestamp={showTimestamp}
                 theme={theme}
+                autoHide={autoHide}
             />
         );
     }

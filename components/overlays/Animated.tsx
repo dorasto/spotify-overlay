@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import the themes object
@@ -26,15 +26,17 @@ interface NowPlaying {
 export default function AnimatedOverlay({
     nowPlaying,
     showTimestamp = false,
-    autoHide = true,
+    autoHide = false,
     theme = "default", // Default theme is "default"
     showCase,
+    className,
 }: {
     nowPlaying: NowPlaying; // Current playing track details
     showTimestamp?: boolean; // Whether to show the timestamp of the track
     autoHide?: boolean; // Whether to auto-hide the overlay when not playing
     theme?: keyof typeof themes; // Use the keys of the themes object as valid values for the theme prop
     showCase?: boolean;
+    className?: string;
 }) {
     let currentTheme = themes[theme]; // Get the theme object from the imported themes
     if (!currentTheme) {
@@ -45,30 +47,30 @@ export default function AnimatedOverlay({
     const [visible, setVisible] = useState(true);
     const [animationState, setAnimationState] = useState<
         "entering" | "visible" | "exiting"
-    >("visible");
-
-    // // Handle song changes and visibility
-    // useEffect(() => {
-    //     if (nowPlaying.is_playing) {
-    //         setVisible(true);
-    //         setAnimationState("entering");
-    //         const enterTimer = setTimeout(() => {
-    //             setAnimationState("visible");
-    //         }, 1000);
-    //         return () => {
-    //             clearTimeout(enterTimer);
-    //         };
-    //     }
-
-    //     // Auto-hide when not playing
-    //     let exitTimer: NodeJS.Timeout;
-    //     if (autoHide && !nowPlaying.is_playing) {
-    //         exitTimer = setTimeout(() => {
-    //             setAnimationState("exiting");
-    //             setTimeout(() => setVisible(false), 1000);
-    //         }, 15000);
-    //     }
-    // }, [nowPlaying.is_playing, autoHide]);
+    >(className ? "exiting" : "visible");
+    // Handle song changes and visibility
+    useEffect(() => {
+        let enterTimer: NodeJS.Timeout | null = null;
+        let exitTimer: NodeJS.Timeout | null = null;
+        if (autoHide) {
+            if (nowPlaying.is_playing) {
+                setVisible(true);
+                setAnimationState("entering");
+                enterTimer = setTimeout(() => {
+                    setAnimationState("visible");
+                }, 1000);
+            } else if (autoHide) {
+                exitTimer = setTimeout(() => {
+                    setAnimationState("exiting");
+                    setTimeout(() => setVisible(false), 1000);
+                }, 500);
+            }
+        }
+        return () => {
+            if (enterTimer) clearTimeout(enterTimer);
+            if (exitTimer) clearTimeout(exitTimer);
+        };
+    }, [nowPlaying.is_playing, nowPlaying.item?.name, autoHide]);
 
     const positionClasses = {
         "top-left": "top-4 left-4",
@@ -90,7 +92,8 @@ export default function AnimatedOverlay({
                 animationState === "entering" && "translate-y-8 opacity-0",
                 animationState === "visible" && "translate-y-0 opacity-100",
                 animationState === "exiting" && "translate-y-8 opacity-0",
-                showCase ? "" : "fixed"
+                showCase ? "" : "fixed",
+                className
             )}
         >
             <div
@@ -114,33 +117,31 @@ export default function AnimatedOverlay({
                     </div>
 
                     {/* Animated equalizer bars */}
-                    {nowPlaying.is_playing && (
-                        <div
-                            className={cn(
-                                "absolute left-0 right-0 flex h-8 items-end justify-center gap-1 px-4",
-                                showTimestamp ? "bottom-1" : "bottom-0"
-                            )}
-                        >
-                            {[...Array(12)].map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={cn(
-                                        "w-1 rounded-t-sm opacity-80",
-                                        currentTheme.badge
-                                    )}
-                                    style={{
-                                        height: `${Math.random() * 100}%`,
-                                        animationName: `equalizer`,
-                                        animationDuration: `${0.5 + Math.random() * 0.5}s`,
-                                        animationTimingFunction: `ease-in-out`,
-                                        animationIterationCount: `infinite`,
-                                        animationDirection: `alternate`,
-                                        animationDelay: `${i * 0.1}s`,
-                                    }}
-                                />
-                            ))}
-                        </div>
-                    )}
+                    <div
+                        className={cn(
+                            "absolute left-0 right-0 flex h-8 items-end justify-center gap-1 px-4",
+                            showTimestamp ? "bottom-1" : "bottom-0"
+                        )}
+                    >
+                        {[...Array(12)].map((_, i) => (
+                            <div
+                                key={i}
+                                className={cn(
+                                    "w-1 rounded-t-sm opacity-80",
+                                    currentTheme.badge
+                                )}
+                                style={{
+                                    height: `${Math.random() * 100}%`,
+                                    animationName: `equalizer`,
+                                    animationDuration: `${0.5 + Math.random() * 0.5}s`,
+                                    animationTimingFunction: `ease-in-out`,
+                                    animationIterationCount: `infinite`,
+                                    animationDirection: `alternate`,
+                                    animationDelay: `${i * 0.1}s`,
+                                }}
+                            />
+                        ))}
+                    </div>
                     {showTimestamp && (
                         <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/50">
                             <div
@@ -156,20 +157,30 @@ export default function AnimatedOverlay({
                 {/* Song info */}
                 <div className="p-3">
                     <div className="overflow-hidden">
-                        <Marquee
-                            speed={25}
-                            gradient={false}
-                            play={nowPlaying.is_playing}
-                        >
-                            <h3
+                        {nowPlaying.is_playing ? (
+                            <Marquee
+                                speed={25}
+                                gradient={false}
+                                autoFill
+                                play={nowPlaying.is_playing}
                                 className={cn(
-                                    "pr-4 text-sm font-medium",
+                                    "text-lg font-bold",
                                     currentTheme.text
                                 )}
                             >
-                                {nowPlaying.item.name + " | "}
-                            </h3>
-                        </Marquee>
+                                {nowPlaying.item.name}{" "}
+                                <span className="mx-2">•</span>
+                            </Marquee>
+                        ) : (
+                            <p
+                                className={cn(
+                                    "text-lg font-bold",
+                                    currentTheme.text
+                                )}
+                            >
+                                {nowPlaying.item.name}
+                            </p>
+                        )}
                     </div>
                     <p className={cn("truncate text-xs", currentTheme.text)}>
                         {nowPlaying.item.artists

@@ -7,6 +7,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import themes
+import { CSSProperties } from "react";
 
 interface Track {
     album: {
@@ -31,6 +32,8 @@ interface SpotifyOverlayProps {
     showTimestamp?: boolean;
     theme?: keyof typeof themes; // Type the theme as a key of the themes object
     className?: string;
+    classNameCardContent?: string;
+    style?: CSSProperties;
 }
 
 export default function SpotifyOverlay({
@@ -38,6 +41,7 @@ export default function SpotifyOverlay({
     showTimestamp,
     theme = "default", // Default theme is "default"
     className,
+    style,
 }: SpotifyOverlayProps) {
     const progressPercentage =
         (nowPlaying.raw_progress_ms / nowPlaying.item.raw_duration_ms) * 100;
@@ -50,13 +54,14 @@ export default function SpotifyOverlay({
     return (
         <Card
             className={cn(
-                "relative w-72 border-0",
+                "relative w-96 border-0",
                 "shadow-lg backdrop-blur-lg transition-all duration-300",
                 currentTheme.card, // Apply the theme's card style
                 className
             )}
+            style={style}
         >
-            <CardContent className={"p-4"}>
+            <CardContent className={cn(showTimestamp ? "pb-3" : "p-1")}>
                 <div className="flex items-center gap-3">
                     <div className="relative flex-shrink-0">
                         <Avatar
@@ -99,9 +104,9 @@ export default function SpotifyOverlay({
                         </Avatar>
 
                         <Badge
-                            variant="default"
+                            variant="music"
                             className={cn(
-                                "absolute -bottom-1 -right-1 h-4 w-4 p-0",
+                                "hover:none absolute -bottom-1 -right-1 h-4 w-4 p-0",
                                 currentTheme.badge
                             )}
                         >
@@ -111,21 +116,30 @@ export default function SpotifyOverlay({
 
                     <div className="flex min-w-0 flex-grow flex-col">
                         <div className="overflow-hidden">
-                            <Marquee
-                                speed={25}
-                                gradient={false}
-                                autoFill
-                                play={nowPlaying.is_playing}
-                            >
-                                <h3
+                            {nowPlaying.is_playing ? (
+                                <Marquee
+                                    speed={25}
+                                    gradient={false}
+                                    autoFill
+                                    play={nowPlaying.is_playing}
                                     className={cn(
                                         "text-lg font-bold",
                                         currentTheme.text
                                     )}
                                 >
-                                    {nowPlaying.item.name + " | "}
-                                </h3>
-                            </Marquee>
+                                    {nowPlaying.item.name}{" "}
+                                    <span className="mx-2">•</span>
+                                </Marquee>
+                            ) : (
+                                <p
+                                    className={cn(
+                                        "text-lg font-bold",
+                                        currentTheme.text
+                                    )}
+                                >
+                                    {nowPlaying.item.name}
+                                </p>
+                            )}
                         </div>
                         <p
                             className={cn(
