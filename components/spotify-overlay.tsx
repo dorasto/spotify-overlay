@@ -7,22 +7,10 @@ import { Button } from "./ui/button";
 import SpotifyOverlay from "./overlays";
 import MinimalBarOverlay from "./overlays/MinimalBar";
 import AnimatedOverlay from "./overlays/Animated";
-
-interface Track {
-    album: {
-        images: { url: string }[];
-        name: string;
-    };
-    artists: { name: string }[];
-    name: string;
-    duration_ms: number;
-}
-
-interface NowPlaying {
-    is_playing: boolean;
-    item: Track;
-    progress_ms: number;
-}
+import TestOverlay from "./overlays/Test";
+import { positionClasses } from "./overlays/positions";
+import SpotifyOverlayFade from "./overlays/Fade";
+import { NowPlaying } from "@/types";
 
 export default function SpotifyOverlayMiddle() {
     const [token, setToken] = useState<string | null>(null);
@@ -41,6 +29,14 @@ export default function SpotifyOverlayMiddle() {
     const [autoHide] = useQueryState<any>(
         "autoHide",
         parseAsBoolean.withDefault(false)
+    );
+    const [position] = useQueryState<any>(
+        "position",
+        parseAsString.withDefault("bottom-right")
+    );
+    const [background] = useQueryState<any>(
+        "background",
+        parseAsString.withDefault("")
     );
     const [inputCode, setInputCode] = useState("");
 
@@ -116,7 +112,7 @@ export default function SpotifyOverlayMiddle() {
         }
     };
 
-    const formatTime = (ms: number) => {
+    const formatTime = (ms: any) => {
         const minutes = Math.floor(ms / 60000);
         const seconds = Math.floor((ms % 60000) / 1000);
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
@@ -142,19 +138,20 @@ export default function SpotifyOverlayMiddle() {
     }
 
     if (!nowPlaying || !nowPlaying.item) return null;
+    const newNowPlaying = {
+        ...nowPlaying,
+        progress_ms: formatTime(nowPlaying.progress_ms),
+        raw_progress_ms: parseInt(nowPlaying.progress_ms),
+        item: {
+            ...nowPlaying.item,
+            duration_ms: formatTime(nowPlaying.item.duration_ms),
+            raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
+        },
+    };
     if (style == "minimalBar") {
         return (
             <MinimalBarOverlay
-                nowPlaying={{
-                    ...nowPlaying,
-                    progress_ms: formatTime(nowPlaying.progress_ms),
-                    raw_progress_ms: nowPlaying.progress_ms,
-                    item: {
-                        ...nowPlaying.item,
-                        duration_ms: formatTime(nowPlaying.item.duration_ms),
-                        raw_duration_ms: nowPlaying.item.duration_ms,
-                    },
-                }}
+                nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
             />
@@ -163,36 +160,48 @@ export default function SpotifyOverlayMiddle() {
     if (style == "animated") {
         return (
             <AnimatedOverlay
-                nowPlaying={{
-                    ...nowPlaying,
-                    progress_ms: formatTime(nowPlaying.progress_ms),
-                    raw_progress_ms: nowPlaying.progress_ms,
-                    item: {
-                        ...nowPlaying.item,
-                        duration_ms: formatTime(nowPlaying.item.duration_ms),
-                        raw_duration_ms: nowPlaying.item.duration_ms,
-                    },
-                }}
+                nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
+                position={position}
                 autoHide={autoHide}
             />
         );
     }
+    if (style == "fade") {
+        return (
+            <SpotifyOverlayFade
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={position}
+                background={background}
+            />
+        );
+    }
+    if (style == "test") {
+        return (
+            <>
+                {Object.entries(positionClasses).map(([key, value]) => (
+                    <TestOverlay
+                        key={key}
+                        nowPlaying={newNowPlaying}
+                        showTimestamp={showTimestamp}
+                        theme={theme}
+                        position={key}
+                        background={background}
+                    />
+                ))}
+            </>
+        );
+    }
     return (
         <SpotifyOverlay
-            nowPlaying={{
-                ...nowPlaying,
-                progress_ms: formatTime(nowPlaying.progress_ms),
-                raw_progress_ms: nowPlaying.progress_ms,
-                item: {
-                    ...nowPlaying.item,
-                    duration_ms: formatTime(nowPlaying.item.duration_ms),
-                    raw_duration_ms: nowPlaying.item.duration_ms,
-                },
-            }}
+            nowPlaying={newNowPlaying}
             showTimestamp={showTimestamp}
             theme={theme}
+            position={position}
+            background={background}
         />
     );
 }

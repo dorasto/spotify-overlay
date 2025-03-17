@@ -5,24 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import the themes object
 import { cn } from "@/lib/utils";
-
-interface Track {
-    album: {
-        images: { url: string }[];
-        name: string;
-    };
-    artists: { name: string }[];
-    name: string;
-    duration_ms: string;
-    raw_duration_ms: number;
-}
-
-interface NowPlaying {
-    is_playing: boolean;
-    item: Track;
-    progress_ms: string;
-    raw_progress_ms: number;
-}
+import { NowPlaying } from "@/types";
 
 interface MinimalBarOverlayProps {
     nowPlaying: NowPlaying; // Track currently playing
