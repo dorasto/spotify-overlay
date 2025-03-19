@@ -7,15 +7,14 @@ import { Button } from "./ui/button";
 import SpotifyOverlay from "./overlays";
 import MinimalBarOverlay from "./overlays/MinimalBar";
 import AnimatedOverlay from "./overlays/Animated";
-import TestOverlay from "./overlays/Test";
-import { positionClasses } from "./overlays/positions";
 import SpotifyOverlayFade from "./overlays/Fade";
-import { NowPlaying } from "@/types";
+import { NowPlaying, QueueItems } from "@/types";
 
 export default function SpotifyOverlayMiddle() {
     const [token, setToken] = useState<string | null>(null);
     const [noToken, setNoToken] = useState(false);
     const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
+    const [queue, setQueue] = useState<QueueItems[] | null>(null);
     const [isVisible] = useState(true);
     const [showTimestamp] = useQueryState(
         "timestamp",
@@ -39,7 +38,6 @@ export default function SpotifyOverlayMiddle() {
         parseAsString.withDefault("")
     );
     const [inputCode, setInputCode] = useState("");
-
     useEffect(() => {
         const storedToken = localStorage.getItem("spotify_access_token");
         if (!storedToken) {
@@ -48,7 +46,7 @@ export default function SpotifyOverlayMiddle() {
         }
         setToken(storedToken);
         fetchNowPlaying();
-
+        localStorage.removeItem("spotify_song_id");
         const interval = setInterval(fetchNowPlaying, 5_000);
         return () => clearInterval(interval);
     }, [token]);
@@ -98,12 +96,38 @@ export default function SpotifyOverlayMiddle() {
             );
             if (response.status == 200) {
                 const data = await response.json();
+                const oldSongId = localStorage.getItem("spotify_song_id");
+                if (oldSongId !== data.item.id) {
+                    fetchQueue();
+                }
+                localStorage.setItem("spotify_song_id", data.item.id);
                 setNowPlaying(data);
             } else if (response.status == 401) {
                 const data = await response.json();
                 if (data?.error?.message === "The access token expired") {
                     getRefreshToken();
                 }
+            } else {
+                setNowPlaying(null);
+                console.log(response);
+            }
+        } catch (error) {
+            console.error("Error fetching now playing:", error);
+        }
+    };
+    const fetchQueue = async () => {
+        if (!token) return;
+        try {
+            const response = await fetch(
+                "https://api.spotify.com/v1/me/player/queue",
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (response.status == 200) {
+                const data = await response.json();
+                setQueue(data.queue);
+            } else if (response.status == 401) {
             } else {
                 console.log(response);
             }
@@ -148,6 +172,19 @@ export default function SpotifyOverlayMiddle() {
             raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
         },
     };
+    const trackName = newNowPlaying.item.name;
+    const artists = newNowPlaying.item.artists
+        .map((artist) => artist.name)
+        .join(", ");
+    const trackUrl = newNowPlaying.item.external_urls.spotify;
+    if (nowPlaying) {
+        localStorage.setItem(
+            "spotify_song",
+            `🎵 Now Playing: ${trackName} by ${artists} | 🔗 Listen: ${trackUrl}`
+        );
+    } else {
+        localStorage.removeItem("spotify_song");
+    }
     if (style == "minimalBar") {
         return (
             <MinimalBarOverlay
@@ -179,22 +216,7 @@ export default function SpotifyOverlayMiddle() {
             />
         );
     }
-    if (style == "test") {
-        return (
-            <>
-                {Object.entries(positionClasses).map(([key, value]) => (
-                    <TestOverlay
-                        key={key}
-                        nowPlaying={newNowPlaying}
-                        showTimestamp={showTimestamp}
-                        theme={theme}
-                        position={key}
-                        background={background}
-                    />
-                ))}
-            </>
-        );
-    }
+
     return (
         <SpotifyOverlay
             nowPlaying={newNowPlaying}
