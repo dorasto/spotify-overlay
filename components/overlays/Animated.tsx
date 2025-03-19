@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import the themes object
 import { positionClasses } from "./positions";
 import { NowPlaying } from "@/types";
+import Ticker from "../ticker";
 
 export default function AnimatedOverlay({
     nowPlaying,
@@ -169,36 +169,22 @@ export default function AnimatedOverlay({
                 {/* Song info */}
                 <div className="p-3">
                     <div className="overflow-hidden">
-                        {nowPlaying.is_playing ? (
-                            <Marquee
-                                speed={25}
-                                gradient={false}
-                                autoFill
-                                play={nowPlaying.is_playing}
-                                className={cn(
-                                    "text-lg font-bold",
-                                    currentTheme.text
-                                )}
-                            >
-                                {nowPlaying.item.name}{" "}
-                                <span className="mx-2">•</span>
-                            </Marquee>
-                        ) : (
-                            <p
-                                className={cn(
-                                    "text-lg font-bold",
-                                    currentTheme.text
-                                )}
-                            >
-                                {nowPlaying.item.name}
-                            </p>
-                        )}
+                        <Ticker
+                            text={nowPlaying.item.name}
+                            className={cn(
+                                "text-lg font-bold",
+                                currentTheme.text
+                            )}
+                        />
                     </div>
-                    <p className={cn("truncate text-xs", currentTheme.text)}>
-                        {nowPlaying.item.artists
-                            .map((artist) => artist.name)
-                            .join(", ")}
-                    </p>
+                    <div className={cn("text-sm", currentTheme.text)}>
+                        <Ticker
+                            duration={20}
+                            text={nowPlaying.item.artists
+                                .map((artist) => artist.name)
+                                .join(", ")}
+                        />
+                    </div>
 
                     {showTimestamp && (
                         <div className="mt-1 flex items-center justify-between text-xs">

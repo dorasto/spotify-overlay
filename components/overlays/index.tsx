@@ -5,11 +5,11 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import themes
 import { CSSProperties } from "react";
 import { positionClasses } from "./positions";
-import { NowPlaying } from "@/types";
+import { NowPlaying, QueueItems } from "@/types";
+import Ticker, { VerticalTicker } from "../ticker";
 
 interface SpotifyOverlayProps {
     nowPlaying: NowPlaying;
@@ -23,6 +23,7 @@ interface SpotifyOverlayProps {
     background?: "song-image" | "";
     onMouseDown?: (e: React.MouseEvent) => void;
     ref?: React.RefObject<HTMLDivElement | null>;
+    queue?: QueueItems[] | null;
 }
 
 export default function SpotifyOverlay({
@@ -36,6 +37,7 @@ export default function SpotifyOverlay({
     background,
     onMouseDown,
     ref,
+    queue,
 }: SpotifyOverlayProps) {
     const progressPercentage =
         (nowPlaying.raw_progress_ms / nowPlaying.item.raw_duration_ms) * 100;
@@ -90,6 +92,7 @@ export default function SpotifyOverlay({
                         zIndex: 10, // Ensures content is above the blurred background
                         background: "transparent",
                     }}
+                    queue={queue}
                 />
             </div>
         );
@@ -162,41 +165,23 @@ export default function SpotifyOverlay({
 
                     <div className="flex min-w-0 flex-grow flex-col">
                         <div className="overflow-hidden">
-                            {nowPlaying.is_playing ? (
-                                <Marquee
-                                    speed={25}
-                                    gradient={false}
-                                    autoFill
-                                    play={nowPlaying.is_playing}
-                                    className={cn(
-                                        "text-lg font-bold",
-                                        currentTheme.text
-                                    )}
-                                >
-                                    {nowPlaying.item.name}{" "}
-                                    <span className="mx-2">•</span>
-                                </Marquee>
-                            ) : (
-                                <p
-                                    className={cn(
-                                        "text-lg font-bold",
-                                        currentTheme.text
-                                    )}
-                                >
-                                    {nowPlaying.item.name}
-                                </p>
-                            )}
+                            <Ticker
+                                text={nowPlaying.item.name}
+                                className={cn(
+                                    "text-lg font-bold",
+                                    currentTheme.text
+                                )}
+                            />
                         </div>
-                        <p
-                            className={cn(
-                                "truncate text-sm",
-                                currentTheme.text
-                            )}
-                        >
-                            {nowPlaying.item.artists
-                                .map((artist) => artist.name)
-                                .join(", ")}
-                        </p>
+                        <div className={cn("text-sm", currentTheme.text)}>
+                            <Ticker
+                                duration={20}
+                                endPadding={0}
+                                text={nowPlaying.item.artists
+                                    .map((artist) => artist.name)
+                                    .join(", ")}
+                            />
+                        </div>
 
                         {showTimestamp && (
                             <div
@@ -220,6 +205,27 @@ export default function SpotifyOverlay({
                                 <span>/</span>
                                 <span>{nowPlaying.item.duration_ms}</span>
                             </div>
+                        )}
+                        {queue && (
+                            <VerticalTicker
+                                duration={10}
+                                endPadding={0}
+                                className={cn(
+                                    "text-xs",
+                                    currentTheme.timestampText
+                                )}
+                                number={true}
+                                texts={queue
+                                    .slice(0, 5)
+                                    .map(
+                                        (track) =>
+                                            track.name +
+                                            " - " +
+                                            track.artists
+                                                .map((artist) => artist.name)
+                                                .join(", ")
+                                    )}
+                            />
                         )}
                     </div>
                 </div>

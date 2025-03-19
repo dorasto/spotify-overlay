@@ -10,6 +10,7 @@ import {
 import { Button } from "./ui/button";
 import { ExpandIcon } from "lucide-react";
 import ThemeShowcase from "./showcase";
+import TwitchCodeInput from "./twitch/input";
 
 export default function ShowcaseSheet() {
     return (
@@ -28,6 +29,7 @@ export default function ShowcaseSheet() {
                     </SheetDescription>
                 </SheetHeader>
                 <div className="">
+                    <TwitchCodeInput />
                     <ThemeShowcase dialog />
                 </div>
             </SheetContent>
