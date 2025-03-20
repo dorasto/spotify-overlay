@@ -8,14 +8,28 @@ import SpotifyOverlay from "./overlays";
 import MinimalBarOverlay from "./overlays/MinimalBar";
 import AnimatedOverlay from "./overlays/Animated";
 import SpotifyOverlayFade from "./overlays/Fade";
-import { NowPlaying, QueueItems } from "@/types";
+import { LocalStorageNowPlaying, NowPlaying, QueueItems } from "@/types";
+import QueueOverlay from "./overlays/queue";
+import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
 
 export default function SpotifyOverlayMiddle() {
-    const [token, setToken] = useState<string | null>(null);
     const [noToken, setNoToken] = useState(false);
+    const [inputCode, setInputCode] = useState("");
+    const [nowPlayingSong, setNowPlayingSong] =
+        useLocalStorageJSON<LocalStorageNowPlaying | null>(
+            "spotify_now_playing",
+            null
+        );
+    const [token, setToken] = useLocalStorage("spotify_access_token", null);
+    const [refreshToken, setRefreshToken] = useLocalStorage(
+        "spotify_refresh_token",
+        null
+    );
+    const [queue, setQueue] = useLocalStorageJSON<QueueItems[] | null>(
+        "spotify_queue",
+        null
+    );
     const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
-    const [queue, setQueue] = useState<QueueItems[] | null>(null);
-    const [isVisible] = useState(true);
     const [showTimestamp] = useQueryState(
         "timestamp",
         parseAsBoolean.withDefault(false)
@@ -37,26 +51,37 @@ export default function SpotifyOverlayMiddle() {
         "background",
         parseAsString.withDefault("")
     );
-    const [inputCode, setInputCode] = useState("");
     useEffect(() => {
-        const storedToken = localStorage.getItem("spotify_access_token");
-        if (!storedToken) {
+        if (!token) {
             setNoToken(true);
             return;
         }
-        setToken(storedToken);
         fetchNowPlaying();
-        localStorage.removeItem("spotify_song_id");
         const interval = setInterval(fetchNowPlaying, 5_000);
         return () => clearInterval(interval);
-    }, [token]);
+    }, [token, nowPlayingSong?.id, refreshToken]);
+
+    useEffect(() => {
+        if (nowPlaying) {
+            const trackName = newNowPlaying.item.name;
+            const trackUrl = newNowPlaying.item.external_urls.spotify;
+            setNowPlayingSong({
+                playing: nowPlaying.is_playing,
+                name: trackName,
+                artists: nowPlaying.item.artists.map((artist) => artist.name),
+                url: trackUrl,
+                id: nowPlaying.item.id,
+            });
+        } else {
+            setNowPlayingSong(null);
+        }
+    }, [nowPlaying?.item.name, nowPlaying?.is_playing]);
 
     const saveCode = () => {
         window.location.href = `/connect/spotify/code?code=${inputCode}`;
     };
 
     const getRefreshToken = async () => {
-        const refreshToken = localStorage.getItem("spotify_refresh_token");
         if (!refreshToken) return;
 
         const url = "/connect/spotify/refresh";
@@ -71,12 +96,8 @@ export default function SpotifyOverlayMiddle() {
             const data = await response.json();
 
             if (data.access_token) {
-                localStorage.setItem("spotify_access_token", data.access_token);
                 if (data.refresh_token) {
-                    localStorage.setItem(
-                        "spotify_refresh_token",
-                        data.refresh_token
-                    );
+                    setRefreshToken(data.refresh_token);
                 }
                 setToken(data.access_token);
             }
@@ -96,11 +117,9 @@ export default function SpotifyOverlayMiddle() {
             );
             if (response.status == 200) {
                 const data = await response.json();
-                const oldSongId = localStorage.getItem("spotify_song_id");
-                if (oldSongId !== data.item.id) {
+                if (nowPlayingSong?.id !== data.item.id) {
                     fetchQueue();
                 }
-                localStorage.setItem("spotify_song_id", data.item.id);
                 setNowPlaying(data);
             } else if (response.status == 401) {
                 const data = await response.json();
@@ -108,7 +127,6 @@ export default function SpotifyOverlayMiddle() {
                     getRefreshToken();
                 }
             } else {
-                setNowPlaying(null);
                 console.log(response);
             }
         } catch (error) {
@@ -142,8 +160,6 @@ export default function SpotifyOverlayMiddle() {
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
 
-    if (!isVisible) return null;
-
     if (noToken) {
         return (
             <div className="flex flex-col items-center gap-2 rounded-lg bg-black/70 p-4">
@@ -172,19 +188,6 @@ export default function SpotifyOverlayMiddle() {
             raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
         },
     };
-    const trackName = newNowPlaying.item.name;
-    const artists = newNowPlaying.item.artists
-        .map((artist) => artist.name)
-        .join(", ");
-    const trackUrl = newNowPlaying.item.external_urls.spotify;
-    if (nowPlaying) {
-        localStorage.setItem(
-            "spotify_song",
-            `🎵 Now Playing: ${trackName} by ${artists} | 🔗 Listen: ${trackUrl}`
-        );
-    } else {
-        localStorage.removeItem("spotify_song");
-    }
     if (style == "minimalBar") {
         return (
             <MinimalBarOverlay
@@ -216,7 +219,18 @@ export default function SpotifyOverlayMiddle() {
             />
         );
     }
-
+    if (style == "queue") {
+        return (
+            <QueueOverlay
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={position}
+                background={background}
+                queue={queue}
+            />
+        );
+    }
     return (
         <SpotifyOverlay
             nowPlaying={newNowPlaying}

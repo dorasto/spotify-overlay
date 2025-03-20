@@ -1,3 +1,11 @@
+export interface LocalStorageNowPlaying {
+    playing: boolean;
+    name: string;
+    artists: string[];
+    url: string;
+    id: string;
+}
+
 export interface Track {
     album: {
         album_type: string;

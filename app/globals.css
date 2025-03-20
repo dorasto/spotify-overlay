@@ -67,3 +67,26 @@ body {
         height: 100%;
     }
 }
+
+/* Track (the area behind the thumb) */
+::-webkit-scrollbar-track {
+    background: hsl(var(--muted)); /* Use muted color for track */
+}
+
+/* Handle (the draggable part) */
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--primary)); /* Use primary color for thumb */
+    border-radius: 5px; /* Optional: Rounded corners */
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--primary), 0.8); /* Slightly lighter on hover */
+}
+
+/* Firefox */
+/* Provide fallback styling for Firefox */
+html {
+    scrollbar-color: hsl(var(--primary)) hsl(var(--muted));
+    scrollbar-width: auto;
+}

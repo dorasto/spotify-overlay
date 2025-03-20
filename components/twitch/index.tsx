@@ -1,18 +1,24 @@
 "use client";
+import {
+    fetchLocalStorage,
+    fetchLocalStorageJSON,
+    useLocalStorage,
+} from "@/hooks/useLocalStorage";
+import { LocalStorageNowPlaying } from "@/types";
 import { useEffect, useRef, useState } from "react";
 import tmi from "tmi.js";
 
 export default function TwitchBotChat() {
-    const [token, setToken] = useState<string | null>();
+    const [token, setToken] = useLocalStorage("twitch_access_token", null);
+    const [refreshToken, setRefreshToken] = useLocalStorage(
+        "twitch_refresh_token",
+        null
+    );
     const client = useRef<tmi.Client | null>(null);
     const isListenerAttached = useRef(false);
     const [isConnected, setIsConnected] = useState(false);
     useEffect(() => {
-        const _token = localStorage.getItem("twitch_access_token");
-        setToken(_token);
-    });
-    useEffect(() => {
-        const username = localStorage.getItem("twitch_username");
+        const username = fetchLocalStorage("twitch_username");
         if (!username || !token) {
             return;
         }
@@ -54,9 +60,19 @@ export default function TwitchBotChat() {
                 const args = message.trim().split(" ").slice(1);
                 switch (command) {
                     case "!song":
-                        const song = localStorage.getItem("spotify_song");
-                        if (song) {
-                            client.current?.say(channel, song);
+                        const nowPlayingSong =
+                            fetchLocalStorageJSON<LocalStorageNowPlaying | null>(
+                                "spotify_now_playing",
+                                null
+                            );
+                        if (nowPlayingSong) {
+                            if (nowPlayingSong.playing) {
+                                const song = `🎵 Now Playing: ${nowPlayingSong.name} by ${nowPlayingSong.artists.join(", ")} | 🔗 Listen: ${nowPlayingSong.url}`;
+                                client.current?.say(channel, song);
+                            } else {
+                                const song = `🎵 Not Playing: ${nowPlayingSong.name} by ${nowPlayingSong.artists.join(", ")} | 🔗 Listen: ${nowPlayingSong.url}`;
+                                client.current?.say(channel, song);
+                            }
                         } else {
                             client.current?.say(
                                 channel,
@@ -79,7 +95,6 @@ export default function TwitchBotChat() {
     }, [isConnected, token]); // Dependency ensures the effect runs only when needed
 
     const refreshTwitchToken = async () => {
-        const refreshToken = localStorage.getItem("twitch_refresh_token");
         if (!refreshToken) return;
 
         const url = "/connect/twitch/refresh";
@@ -94,13 +109,11 @@ export default function TwitchBotChat() {
             const data = await response.json();
 
             if (data.access_token) {
-                localStorage.setItem("twitch_access_token", data.access_token);
-                localStorage.setItem(
-                    "twitch_refresh_token",
-                    data.refresh_token
-                );
-                console.log("Twitch token refreshed! Reloading bot...");
                 setIsConnected(false); // Force reconnect with the new token
+                if (data.refresh_token) {
+                    setRefreshToken(data.refresh_token);
+                }
+                console.log("Twitch token refreshed! Reloading bot...");
                 setToken(data.access_token);
             }
         } catch (error) {
