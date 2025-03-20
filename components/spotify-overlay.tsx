@@ -11,8 +11,13 @@ import SpotifyOverlayFade from "./overlays/Fade";
 import { LocalStorageNowPlaying, NowPlaying, QueueItems } from "@/types";
 import QueueOverlay from "./overlays/queue";
 import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
+import SpotifyOverlayDynamic from "./overlays/Dynamic";
 
-export default function SpotifyOverlayMiddle() {
+export default function SpotifyOverlayMiddle({
+    _position,
+}: {
+    _position?: string;
+}) {
     const [noToken, setNoToken] = useState(false);
     const [inputCode, setInputCode] = useState("");
     const [nowPlayingSong, setNowPlayingSong] =
@@ -203,7 +208,7 @@ export default function SpotifyOverlayMiddle() {
                 nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
-                position={position}
+                position={_position ? _position : position}
                 autoHide={autoHide}
             />
         );
@@ -214,7 +219,7 @@ export default function SpotifyOverlayMiddle() {
                 nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
-                position={position}
+                position={_position ? _position : position}
                 background={background}
             />
         );
@@ -225,18 +230,31 @@ export default function SpotifyOverlayMiddle() {
                 nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
-                position={position}
+                position={_position ? _position : position}
                 background={background}
                 queue={queue}
             />
         );
     }
+    if (style == "dynamic") {
+        return (
+            <SpotifyOverlayDynamic
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={_position ? _position : position}
+                background={background}
+                queue={queue}
+            />
+        );
+    }
+
     return (
         <SpotifyOverlay
             nowPlaying={newNowPlaying}
             showTimestamp={showTimestamp}
             theme={theme}
-            position={position}
+            position={_position ? _position : position}
             background={background}
         />
     );
