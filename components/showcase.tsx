@@ -9,6 +9,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { Label } from "./ui/label";
 import SpotifyOverlayFade from "./overlays/Fade";
+import SpotifyOverlayDynamic from "./overlays/Dynamic";
 
 export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
     const [song, setSong] = useState<any>({
@@ -162,6 +163,12 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                         >
                             Fade
                         </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="dynamic"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            Dynamic
+                        </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
             </div>
@@ -214,6 +221,9 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                     Animated
                                 </TabsTrigger>
                                 <TabsTrigger value="fade">Fade</TabsTrigger>
+                                <TabsTrigger value="dynamic">
+                                    Dynamic
+                                </TabsTrigger>
                             </TabsList>
                             <TabsContent value="standard">
                                 <span className="my-2 block text-white">
@@ -284,6 +294,23 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                     </code>
                                 </span>
                                 <SpotifyOverlayFade
+                                    nowPlaying={song}
+                                    theme={themeName as keyof typeof themes}
+                                    showTimestamp={showTimestamp}
+                                    showCase
+                                />
+                            </TabsContent>
+                            <TabsContent value="dynamic">
+                                <span className="my-2 block text-white">
+                                    <code className="rounded bg-muted px-2 py-1">
+                                        {generateOverlayURL(
+                                            "dynamic",
+                                            themeName,
+                                            showTimestamp
+                                        )}
+                                    </code>
+                                </span>
+                                <SpotifyOverlayDynamic
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
                                     showTimestamp={showTimestamp}
