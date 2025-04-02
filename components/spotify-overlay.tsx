@@ -12,6 +12,7 @@ import { LocalStorageNowPlaying, NowPlaying, QueueItems } from "@/types";
 import QueueOverlay from "./overlays/queue";
 import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
+import { toast } from "sonner";
 
 export default function SpotifyOverlayMiddle({
     _position,
@@ -82,8 +83,31 @@ export default function SpotifyOverlayMiddle({
         }
     }, [nowPlaying?.item.name, nowPlaying?.is_playing]);
 
-    const saveCode = () => {
-        window.location.href = `/connect/spotify/code?code=${inputCode}`;
+    const saveCode = async () => {
+        try {
+            const response = await fetch("/connect/spotify/code", {
+                method: "POST",
+                body: JSON.stringify({
+                    code: inputCode,
+                }),
+            });
+            if (response.status == 200) {
+                toast.success("Spotify code saved");
+                const data = await response.json();
+                setToken(data.access_token);
+                setRefreshToken(data.refresh_token);
+                localStorage.setItem(
+                    "spotify_token_expires_at",
+                    data.expires_in
+                );
+                setNoToken(false);
+            } else {
+                toast.error("Error saving spotify code");
+                console.log(response);
+            }
+        } catch (error) {
+            console.error("Error fetching now playing:", error);
+        }
     };
 
     const getRefreshToken = async () => {
@@ -105,6 +129,9 @@ export default function SpotifyOverlayMiddle({
                     setRefreshToken(data.refresh_token);
                 }
                 setToken(data.access_token);
+            }
+            if (response.status === 400) {
+                setNoToken(true);
             }
         } catch (error) {
             console.error("Error refreshing token:", error);

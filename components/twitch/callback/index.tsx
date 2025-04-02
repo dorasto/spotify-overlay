@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 
 export default function TwitchCallback({
     searchParams,
@@ -14,13 +13,10 @@ export default function TwitchCallback({
     const handleCopy = () => {
         if (searchParams.code) {
             navigator.clipboard.writeText(searchParams.code); // Copy the code
-            toast.success(
-                "✅ Code copied! Paste it into the input box on the overlay page."
-            );
             setCopied(true);
             setTimeout(() => {
                 setCopied(false);
-            }, 1000);
+            }, 5000);
         }
     };
 
@@ -28,56 +24,70 @@ export default function TwitchCallback({
         <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 p-6 text-white">
             <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-800 p-6 text-center shadow-lg">
                 <h1 className="mb-3 text-2xl font-bold">
-                    🎥 OBS Browser Source Setup
+                    🎮 Connect Twitch Chat Commands
                 </h1>
                 <p className="mb-4 text-sm text-zinc-300">
-                    Follow these steps to connect your Twitch account and get
-                    the current song in your stream chat using the `!song`
-                    command.
+                    Follow these steps to connect your Twitch account and enable
+                    the{" "}
+                    <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
+                        !song
+                    </code>{" "}
+                    command in your stream chat.
                 </p>
 
                 <ol className="mb-5 list-inside list-decimal space-y-2 text-left text-sm text-zinc-300">
                     <li>
-                        Open OBS and select the scene where you want the
-                        overlay.
-                    </li>
-                    <li>
-                        Click the <strong className="text-white">+</strong>{" "}
-                        button in the "Sources" panel.
-                    </li>
-                    <li>
-                        Select <strong className="text-white">Browser</strong>{" "}
-                        and click "OK".
-                    </li>
-                    <li>
-                        Paste the following URL into the{" "}
-                        <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
-                            URL input box
-                        </code>{" "}
-                        in the Browser Source settings:
-                        <br />
+                        Make sure you have the overlay added as a Browser Source
+                        in OBS pointing to{" "}
                         <strong className="text-white">
                             {rootDomain}/overlay
                         </strong>
                     </li>
                     <li>
-                        After pasting the URL, copy the code below and paste it
-                        into the input box that appears on the overlay page
-                        inside OBS. This will allow the overlay to show the
-                        current song.
+                        In OBS,{" "}
+                        <strong className="text-white">
+                            click on your Browser Source
+                        </strong>{" "}
+                        in the Sources list to select it
                     </li>
                     <li>
-                        Adjust width & height (e.g.,{" "}
-                        <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
-                            800x200
-                        </code>
-                        ).
+                        Click the{" "}
+                        <strong className="text-white">"Interact"</strong>{" "}
+                        button in the toolbar that appears above your sources:
+                        <div className="mt-2 flex justify-center">
+                            <img
+                                src="https://cdn.doras.to/doras/assets/473c9e74-3a3b-49ed-a47c-f6463caa6ede/23f7c051-8f4b-446b-8293-bdaaf3b939fd.png"
+                                alt="OBS Interact Button"
+                                className="rounded border border-zinc-600"
+                                width={300}
+                                height={40}
+                            />
+                        </div>
                     </li>
-                    <li>Click "OK" to save.</li>
                     <li>
-                        Once the overlay is set up, type{" "}
+                        In the interaction window that opens, click on the{" "}
+                        <strong className="text-white">settings icon</strong> in
+                        the{" "}
+                        <strong className="text-white">top right corner</strong>{" "}
+                        of the overlay
+                    </li>
+                    <li>
+                        In the settings panel that appears, click on the{" "}
+                        <strong className="text-white">Twitch tab</strong>
+                    </li>
+                    <li>
+                        Paste the code below into the input field labeled
+                        "Twitch Command Code"
+                    </li>
+                    <li>
+                        Click the{" "}
+                        <strong className="text-white">Save Twitch Code</strong>{" "}
+                        button to complete the connection
+                    </li>
+                    <li>
+                        Once connected, your viewers can type{" "}
                         <strong className="text-white">!song</strong> in your
-                        Twitch chat to get the current song playing!
+                        Twitch chat to see what song is currently playing
                     </li>
                 </ol>
 
@@ -85,16 +95,17 @@ export default function TwitchCallback({
                     className={`w-full rounded-lg px-4 py-2 text-white transition ${
                         copied
                             ? "cursor-default bg-green-500"
-                            : "bg-blue-500 hover:bg-blue-600"
+                            : "bg-purple-600 hover:bg-purple-700"
                     }`}
                     onClick={handleCopy}
                     disabled={copied}
                 >
-                    {copied ? "✅ Code Copied!" : "Copy Code"}
+                    {copied ? "✅ Code Copied!" : "Copy Twitch Code"}
                 </button>
                 {copied && (
                     <p className="mt-2 text-sm text-green-400">
-                        Now paste the code into OBS and you're ready to go!
+                        Now paste this code in the Twitch tab of your overlay
+                        settings!
                     </p>
                 )}
             </div>

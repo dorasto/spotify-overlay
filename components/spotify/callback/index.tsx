@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "sonner";
 
 export default function SpotifyCallback({
     searchParams,
@@ -14,10 +13,10 @@ export default function SpotifyCallback({
     const handleCopy = () => {
         if (searchParams.code) {
             navigator.clipboard.writeText(searchParams.code); // Copy the code
-            toast.success(
-                "✅ Code copied! Paste it into the input box on the overlay page."
-            );
             setCopied(true);
+            setTimeout(() => {
+                setCopied(false);
+            }, 5000);
         }
     };
 
@@ -33,41 +32,65 @@ export default function SpotifyCallback({
 
                 <ol className="mb-5 list-inside list-decimal space-y-2 text-left text-sm text-zinc-300">
                     <li>
-                        Open OBS and select the scene where you want the
-                        overlay.
-                    </li>
-                    <li>
-                        Click the <strong className="text-white">+</strong>{" "}
-                        button in the "Sources" panel.
-                    </li>
-                    <li>
-                        Select <strong className="text-white">Browser</strong>{" "}
-                        and click "OK".
-                    </li>
-                    <li>
-                        Paste the following URL into the{" "}
-                        <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
-                            URL input box
-                        </code>{" "}
-                        in the Browser Source settings:
-                        <br />
+                        Make sure you have the overlay added as a Browser Source
+                        in OBS pointing to{" "}
                         <strong className="text-white">
                             {rootDomain}/overlay
                         </strong>
                     </li>
                     <li>
-                        After pasting the URL, copy the code below and paste it
-                        into the input box that appears on the overlay page
-                        inside OBS.
+                        In OBS,{" "}
+                        <strong className="text-white">
+                            make the overlay visible
+                        </strong>{" "}
+                        in your scene.
                     </li>
                     <li>
-                        Adjust width & height (e.g.,{" "}
-                        <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
-                            800x200
-                        </code>
-                        ).
+                        In OBS,{" "}
+                        <strong className="text-white">
+                            click on your Browser Source
+                        </strong>{" "}
+                        in the Sources list to select it
                     </li>
-                    <li>Click "OK" to save.</li>
+                    <li>
+                        Click the{" "}
+                        <strong className="text-white">"Interact"</strong>{" "}
+                        button in the toolbar that appears above your sources:
+                        <div className="mt-2 flex justify-center">
+                            <img
+                                src="https://cdn.doras.to/doras/assets/473c9e74-3a3b-49ed-a47c-f6463caa6ede/23f7c051-8f4b-446b-8293-bdaaf3b939fd.png"
+                                alt="OBS Interact Button"
+                                className="rounded border border-zinc-600"
+                                width={300}
+                                height={40}
+                            />
+                        </div>
+                    </li>
+                    <li>
+                        In the interaction window that opens,{" "}
+                        <strong className="text-white">
+                            look for the input box on the overlay
+                        </strong>
+                        . It might be visible immediately, or you might need to{" "}
+                        <strong className="text-white">
+                            click the settings icon
+                        </strong>{" "}
+                        in the top right of the overlay to open the settings
+                        panel. Then look for the{" "}
+                        <strong className="text-white">Spotify tab</strong>.
+                    </li>
+
+                    <li>
+                        Paste the code below into the input field labeled
+                        "Spotify Code".
+                    </li>
+                    <li>
+                        Click the{" "}
+                        <strong className="text-white">
+                            Save Spotify Code
+                        </strong>{" "}
+                        button (if available) to complete the connection.
+                    </li>
                 </ol>
 
                 <button
@@ -79,8 +102,14 @@ export default function SpotifyCallback({
                     onClick={handleCopy}
                     disabled={copied}
                 >
-                    {copied ? "✅ Code Copied!" : "Copy Code"}
+                    {copied ? "✅ Code Copied!" : "Copy Spotify Code"}
                 </button>
+                {copied && (
+                    <p className="mt-2 text-sm text-green-400">
+                        Now paste this code in the Spotify tab of your overlay
+                        settings!
+                    </p>
+                )}
             </div>
         </main>
     );

@@ -7,6 +7,7 @@ import { useLocalStorageJSON } from "@/hooks/useLocalStorage";
 import { useEffect, useState } from "react"; // Import useEffect and useState
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { EditorCanvas } from "../editor/canvas";
+import { SettingsSheet } from "../Settings";
 interface MyItem {
     position: { x: number; y: number };
     size: { width: number; height: number };
@@ -51,6 +52,7 @@ export default function CustomOverlayEditor() {
     return (
         <div className="w-full">
             <Zoom />
+            <SettingsSheet />
             <ShowcaseSheet />
             <TwitchBotChat />
             {isClient && settings && edit ? (
