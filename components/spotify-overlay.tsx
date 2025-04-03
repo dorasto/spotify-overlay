@@ -7,28 +7,35 @@ import { Button } from "./ui/button";
 import SpotifyOverlay from "./overlays";
 import MinimalBarOverlay from "./overlays/MinimalBar";
 import AnimatedOverlay from "./overlays/Animated";
+import SpotifyOverlayFade from "./overlays/Fade";
+import { LocalStorageNowPlaying, NowPlaying, QueueItems } from "@/types";
+import QueueOverlay from "./overlays/queue";
+import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
+import SpotifyOverlayDynamic from "./overlays/Dynamic";
+import { toast } from "sonner";
 
-interface Track {
-    album: {
-        images: { url: string }[];
-        name: string;
-    };
-    artists: { name: string }[];
-    name: string;
-    duration_ms: number;
-}
-
-interface NowPlaying {
-    is_playing: boolean;
-    item: Track;
-    progress_ms: number;
-}
-
-export default function SpotifyOverlayMiddle() {
-    const [token, setToken] = useState<string | null>(null);
+export default function SpotifyOverlayMiddle({
+    _position,
+}: {
+    _position?: string;
+}) {
     const [noToken, setNoToken] = useState(false);
+    const [inputCode, setInputCode] = useState("");
+    const [nowPlayingSong, setNowPlayingSong] =
+        useLocalStorageJSON<LocalStorageNowPlaying | null>(
+            "spotify_now_playing",
+            null
+        );
+    const [token, setToken] = useLocalStorage("spotify_access_token", null);
+    const [refreshToken, setRefreshToken] = useLocalStorage(
+        "spotify_refresh_token",
+        null
+    );
+    const [queue, setQueue] = useLocalStorageJSON<QueueItems[] | null>(
+        "spotify_queue",
+        null
+    );
     const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
-    const [isVisible] = useState(true);
     const [showTimestamp] = useQueryState(
         "timestamp",
         parseAsBoolean.withDefault(false)
@@ -42,27 +49,68 @@ export default function SpotifyOverlayMiddle() {
         "autoHide",
         parseAsBoolean.withDefault(false)
     );
-    const [inputCode, setInputCode] = useState("");
-
+    const [position] = useQueryState<any>(
+        "position",
+        parseAsString.withDefault("bottom-right")
+    );
+    const [background] = useQueryState<any>(
+        "background",
+        parseAsString.withDefault("")
+    );
     useEffect(() => {
-        const storedToken = localStorage.getItem("spotify_access_token");
-        if (!storedToken) {
+        if (!token) {
             setNoToken(true);
             return;
         }
-        setToken(storedToken);
         fetchNowPlaying();
-
         const interval = setInterval(fetchNowPlaying, 5_000);
         return () => clearInterval(interval);
-    }, [token]);
+    }, [token, nowPlayingSong?.id, refreshToken]);
 
-    const saveCode = () => {
-        window.location.href = `/connect/spotify/code?code=${inputCode}`;
+    useEffect(() => {
+        if (nowPlaying) {
+            const trackName = newNowPlaying.item.name;
+            const trackUrl = newNowPlaying.item.external_urls.spotify;
+            setNowPlayingSong({
+                playing: nowPlaying.is_playing,
+                name: trackName,
+                artists: nowPlaying.item.artists.map((artist) => artist.name),
+                url: trackUrl,
+                id: nowPlaying.item.id,
+            });
+        } else {
+            setNowPlayingSong(null);
+        }
+    }, [nowPlaying?.item.name, nowPlaying?.is_playing]);
+
+    const saveCode = async () => {
+        try {
+            const response = await fetch("/connect/spotify/code", {
+                method: "POST",
+                body: JSON.stringify({
+                    code: inputCode,
+                }),
+            });
+            if (response.status == 200) {
+                toast.success("Spotify code saved");
+                const data = await response.json();
+                setToken(data.access_token);
+                setRefreshToken(data.refresh_token);
+                localStorage.setItem(
+                    "spotify_token_expires_at",
+                    data.expires_in
+                );
+                setNoToken(false);
+            } else {
+                toast.error("Error saving spotify code");
+                console.log(response);
+            }
+        } catch (error) {
+            console.error("Error fetching now playing:", error);
+        }
     };
 
     const getRefreshToken = async () => {
-        const refreshToken = localStorage.getItem("spotify_refresh_token");
         if (!refreshToken) return;
 
         const url = "/connect/spotify/refresh";
@@ -77,14 +125,13 @@ export default function SpotifyOverlayMiddle() {
             const data = await response.json();
 
             if (data.access_token) {
-                localStorage.setItem("spotify_access_token", data.access_token);
                 if (data.refresh_token) {
-                    localStorage.setItem(
-                        "spotify_refresh_token",
-                        data.refresh_token
-                    );
+                    setRefreshToken(data.refresh_token);
                 }
                 setToken(data.access_token);
+            }
+            if (response.status === 400) {
+                setNoToken(true);
             }
         } catch (error) {
             console.error("Error refreshing token:", error);
@@ -102,6 +149,9 @@ export default function SpotifyOverlayMiddle() {
             );
             if (response.status == 200) {
                 const data = await response.json();
+                if (nowPlayingSong?.id !== data.item.id) {
+                    fetchQueue();
+                }
                 setNowPlaying(data);
             } else if (response.status == 401) {
                 const data = await response.json();
@@ -115,14 +165,32 @@ export default function SpotifyOverlayMiddle() {
             console.error("Error fetching now playing:", error);
         }
     };
+    const fetchQueue = async () => {
+        if (!token) return;
+        try {
+            const response = await fetch(
+                "https://api.spotify.com/v1/me/player/queue",
+                {
+                    headers: { Authorization: `Bearer ${token}` },
+                }
+            );
+            if (response.status == 200) {
+                const data = await response.json();
+                setQueue(data.queue);
+            } else if (response.status == 401) {
+            } else {
+                console.log(response);
+            }
+        } catch (error) {
+            console.error("Error fetching now playing:", error);
+        }
+    };
 
-    const formatTime = (ms: number) => {
+    const formatTime = (ms: any) => {
         const minutes = Math.floor(ms / 60000);
         const seconds = Math.floor((ms % 60000) / 1000);
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
-
-    if (!isVisible) return null;
 
     if (noToken) {
         return (
@@ -142,19 +210,20 @@ export default function SpotifyOverlayMiddle() {
     }
 
     if (!nowPlaying || !nowPlaying.item) return null;
+    const newNowPlaying = {
+        ...nowPlaying,
+        progress_ms: formatTime(nowPlaying.progress_ms),
+        raw_progress_ms: parseInt(nowPlaying.progress_ms),
+        item: {
+            ...nowPlaying.item,
+            duration_ms: formatTime(nowPlaying.item.duration_ms),
+            raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
+        },
+    };
     if (style == "minimalBar") {
         return (
             <MinimalBarOverlay
-                nowPlaying={{
-                    ...nowPlaying,
-                    progress_ms: formatTime(nowPlaying.progress_ms),
-                    raw_progress_ms: nowPlaying.progress_ms,
-                    item: {
-                        ...nowPlaying.item,
-                        duration_ms: formatTime(nowPlaying.item.duration_ms),
-                        raw_duration_ms: nowPlaying.item.duration_ms,
-                    },
-                }}
+                nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
             />
@@ -163,36 +232,57 @@ export default function SpotifyOverlayMiddle() {
     if (style == "animated") {
         return (
             <AnimatedOverlay
-                nowPlaying={{
-                    ...nowPlaying,
-                    progress_ms: formatTime(nowPlaying.progress_ms),
-                    raw_progress_ms: nowPlaying.progress_ms,
-                    item: {
-                        ...nowPlaying.item,
-                        duration_ms: formatTime(nowPlaying.item.duration_ms),
-                        raw_duration_ms: nowPlaying.item.duration_ms,
-                    },
-                }}
+                nowPlaying={newNowPlaying}
                 showTimestamp={showTimestamp}
                 theme={theme}
+                position={_position ? _position : position}
                 autoHide={autoHide}
             />
         );
     }
+    if (style == "fade") {
+        return (
+            <SpotifyOverlayFade
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={_position ? _position : position}
+                background={background}
+            />
+        );
+    }
+    if (style == "queue") {
+        return (
+            <QueueOverlay
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={_position ? _position : position}
+                background={background}
+                queue={queue}
+            />
+        );
+    }
+    if (style == "dynamic") {
+        return (
+            <SpotifyOverlayDynamic
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={_position ? _position : position}
+                background={background}
+                queue={queue}
+            />
+        );
+    }
+
     return (
         <SpotifyOverlay
-            nowPlaying={{
-                ...nowPlaying,
-                progress_ms: formatTime(nowPlaying.progress_ms),
-                raw_progress_ms: nowPlaying.progress_ms,
-                item: {
-                    ...nowPlaying.item,
-                    duration_ms: formatTime(nowPlaying.item.duration_ms),
-                    raw_duration_ms: nowPlaying.item.duration_ms,
-                },
-            }}
+            nowPlaying={newNowPlaying}
             showTimestamp={showTimestamp}
             theme={theme}
+            position={_position ? _position : position}
+            background={background}
         />
     );
 }

@@ -2,26 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import the themes object
-
-interface Track {
-    album: {
-        images: { url: string }[]; // Album cover images
-        name: string; // Album name
-    };
-    artists: { name: string }[]; // Artist names
-    name: string; // Track name
-    duration_ms: string; // Track duration in ms
-    raw_duration_ms: number;
-}
-
-interface NowPlaying {
-    is_playing: boolean; // Whether the track is playing or paused
-    item: Track; // Track details
-    progress_ms: string; // Progress of the track in ms
-    raw_progress_ms: number;
-}
+import { positionClasses } from "./positions";
+import { NowPlaying } from "@/types";
+import Ticker from "../ticker";
 
 export default function AnimatedOverlay({
     nowPlaying,
@@ -30,6 +14,8 @@ export default function AnimatedOverlay({
     theme = "default", // Default theme is "default"
     showCase,
     className,
+    position = "bottom-right",
+    style,
 }: {
     nowPlaying: NowPlaying; // Current playing track details
     showTimestamp?: boolean; // Whether to show the timestamp of the track
@@ -37,13 +23,19 @@ export default function AnimatedOverlay({
     theme?: keyof typeof themes; // Use the keys of the themes object as valid values for the theme prop
     showCase?: boolean;
     className?: string;
+    position?: keyof typeof positionClasses;
+    style?: React.CSSProperties;
 }) {
     let currentTheme = themes[theme]; // Get the theme object from the imported themes
     if (!currentTheme) {
         console.error(`Theme "${theme}" not found.`);
         currentTheme = themes["default"]; // Fallback to the default theme if the specified theme is not found
     }
-
+    let currentPosition = positionClasses[position]; // Get the position class from the imported positionClasses
+    if (!currentPosition) {
+        console.error(`Position "${position}" not found.`);
+        currentPosition = positionClasses["bottom-right"]; // Fallback to the default position if the specified position is not found
+    }
     const [visible, setVisible] = useState(true);
     const [animationState, setAnimationState] = useState<
         "entering" | "visible" | "exiting"
@@ -72,29 +64,49 @@ export default function AnimatedOverlay({
         };
     }, [nowPlaying.is_playing, nowPlaying.item?.name, autoHide]);
 
-    const positionClasses = {
-        "top-left": "top-4 left-4",
-        "top-right": "top-4 right-4",
-        "bottom-left": "bottom-4 left-4",
-        "bottom-right": "bottom-4 right-4",
-    };
-
     if (!visible) return null;
 
     const progressPercentage =
         (nowPlaying.raw_progress_ms / nowPlaying.item.raw_duration_ms) * 100;
-
+    let enteringAnimation = "translateY(22rem)";
+    let exitingAnimation = "translateY(22rem)";
+    if (position.includes("top") && position !== "top-center") {
+        enteringAnimation = "translateY(-22rem)";
+        exitingAnimation = "translateY(-22rem)";
+    } else if (position === "top-center") {
+        enteringAnimation = "translateX(-50%) translateY(-22rem)"; // Coming from the top
+        exitingAnimation = "translateX(-50%) translateY(-22rem)"; // Exiting upwards (no horizontal movement)
+    } else if (position === "bottom-center") {
+        enteringAnimation = "translateX(-50%) translateY(22rem)"; // Coming from the bottom
+        exitingAnimation = "translateX(-50%) translateY(22rem)"; // Exiting downwards (no horizontal movement)
+    } else if (position === "center") {
+        enteringAnimation = "translate(-50%, -50%)  scale(0.5)"; // Coming from the center
+        exitingAnimation = "translate(-50%, -50%)"; // Exiting from the center
+    }
     return (
         <div
             className={cn(
                 "z-50 transition-all duration-1000",
-                positionClasses["bottom-right"],
-                animationState === "entering" && "translate-y-8 opacity-0",
-                animationState === "visible" && "translate-y-0 opacity-100",
-                animationState === "exiting" && "translate-y-8 opacity-0",
+                currentPosition,
+                "translate-y-8 opacity-0",
                 showCase ? "" : "fixed",
-                className
+                className,
+                animationState === "visible" && "translate-y-0 opacity-100"
             )}
+            style={{
+                transform:
+                    animationState === "entering"
+                        ? enteringAnimation
+                        : (animationState === "exiting" && exitingAnimation) ||
+                          (position == "center" && "translate(-50%, -50%)") ||
+                          (position === "middle-left" &&
+                              "translate(0%, -50%)") ||
+                          (position === "middle-right" &&
+                              "translate(0%,-50%)") ||
+                          "",
+                transitionDuration: "2s",
+                ...style,
+            }}
         >
             <div
                 className={cn(
@@ -157,36 +169,22 @@ export default function AnimatedOverlay({
                 {/* Song info */}
                 <div className="p-3">
                     <div className="overflow-hidden">
-                        {nowPlaying.is_playing ? (
-                            <Marquee
-                                speed={25}
-                                gradient={false}
-                                autoFill
-                                play={nowPlaying.is_playing}
-                                className={cn(
-                                    "text-lg font-bold",
-                                    currentTheme.text
-                                )}
-                            >
-                                {nowPlaying.item.name}{" "}
-                                <span className="mx-2">•</span>
-                            </Marquee>
-                        ) : (
-                            <p
-                                className={cn(
-                                    "text-lg font-bold",
-                                    currentTheme.text
-                                )}
-                            >
-                                {nowPlaying.item.name}
-                            </p>
-                        )}
+                        <Ticker
+                            text={nowPlaying.item.name}
+                            className={cn(
+                                "text-lg font-bold",
+                                currentTheme.text
+                            )}
+                        />
                     </div>
-                    <p className={cn("truncate text-xs", currentTheme.text)}>
-                        {nowPlaying.item.artists
-                            .map((artist) => artist.name)
-                            .join(", ")}
-                    </p>
+                    <div className={cn("text-sm", currentTheme.text)}>
+                        <Ticker
+                            duration={20}
+                            text={nowPlaying.item.artists
+                                .map((artist) => artist.name)
+                                .join(", ")}
+                        />
+                    </div>
 
                     {showTimestamp && (
                         <div className="mt-1 flex items-center justify-between text-xs">

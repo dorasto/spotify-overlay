@@ -1,11 +1,17 @@
+import { SettingsSheet } from "@/components/Settings";
 import ShowcaseSheet from "@/components/ShowcaseSheet";
 import SpotifyOverlayMiddle from "@/components/spotify-overlay";
+import TwitchBotChat from "@/components/twitch";
+import Zoom from "@/components/zoom";
 
 export default async function Page() {
     return (
         <div className="w-full">
+            <Zoom />
+            <SettingsSheet />
             <ShowcaseSheet />
-            <div className="fixed bottom-4 right-4 z-50">
+            <TwitchBotChat />
+            <div className="absolute">
                 <SpotifyOverlayMiddle />
             </div>
         </div>

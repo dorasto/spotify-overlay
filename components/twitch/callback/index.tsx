@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-export default function SpotifyCallback({
+export default function TwitchCallback({
     searchParams,
     rootDomain,
 }: {
@@ -24,10 +24,15 @@ export default function SpotifyCallback({
         <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 p-6 text-white">
             <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-800 p-6 text-center shadow-lg">
                 <h1 className="mb-3 text-2xl font-bold">
-                    🎥 OBS Browser Source Setup
+                    🎮 Connect Twitch Chat Commands
                 </h1>
                 <p className="mb-4 text-sm text-zinc-300">
-                    Follow these steps to add the overlay to your OBS stream:
+                    Follow these steps to connect your Twitch account and enable
+                    the{" "}
+                    <code className="rounded bg-zinc-700 px-1 py-0.5 text-white">
+                        !song
+                    </code>{" "}
+                    command in your stream chat.
                 </p>
 
                 <ol className="mb-5 list-inside list-decimal space-y-2 text-left text-sm text-zinc-300">
@@ -37,13 +42,6 @@ export default function SpotifyCallback({
                         <strong className="text-white">
                             {rootDomain}/overlay
                         </strong>
-                    </li>
-                    <li>
-                        In OBS,{" "}
-                        <strong className="text-white">
-                            make the overlay visible
-                        </strong>{" "}
-                        in your scene.
                     </li>
                     <li>
                         In OBS,{" "}
@@ -67,29 +65,29 @@ export default function SpotifyCallback({
                         </div>
                     </li>
                     <li>
-                        In the interaction window that opens,{" "}
-                        <strong className="text-white">
-                            look for the input box on the overlay
-                        </strong>
-                        . It might be visible immediately, or you might need to{" "}
-                        <strong className="text-white">
-                            click the settings icon
-                        </strong>{" "}
-                        in the top right of the overlay to open the settings
-                        panel. Then look for the{" "}
-                        <strong className="text-white">Spotify tab</strong>.
+                        In the interaction window that opens, click on the{" "}
+                        <strong className="text-white">settings icon</strong> in
+                        the{" "}
+                        <strong className="text-white">top right corner</strong>{" "}
+                        of the overlay
                     </li>
-
+                    <li>
+                        In the settings panel that appears, click on the{" "}
+                        <strong className="text-white">Twitch tab</strong>
+                    </li>
                     <li>
                         Paste the code below into the input field labeled
-                        "Spotify Code".
+                        "Twitch Command Code"
                     </li>
                     <li>
                         Click the{" "}
-                        <strong className="text-white">
-                            Save Spotify Code
-                        </strong>{" "}
-                        button (if available) to complete the connection.
+                        <strong className="text-white">Save Twitch Code</strong>{" "}
+                        button to complete the connection
+                    </li>
+                    <li>
+                        Once connected, your viewers can type{" "}
+                        <strong className="text-white">!song</strong> in your
+                        Twitch chat to see what song is currently playing
                     </li>
                 </ol>
 
@@ -97,16 +95,16 @@ export default function SpotifyCallback({
                     className={`w-full rounded-lg px-4 py-2 text-white transition ${
                         copied
                             ? "cursor-default bg-green-500"
-                            : "bg-blue-500 hover:bg-blue-600"
+                            : "bg-purple-600 hover:bg-purple-700"
                     }`}
                     onClick={handleCopy}
                     disabled={copied}
                 >
-                    {copied ? "✅ Code Copied!" : "Copy Spotify Code"}
+                    {copied ? "✅ Code Copied!" : "Copy Twitch Code"}
                 </button>
                 {copied && (
                     <p className="mt-2 text-sm text-green-400">
-                        Now paste this code in the Spotify tab of your overlay
+                        Now paste this code in the Twitch tab of your overlay
                         settings!
                     </p>
                 )}

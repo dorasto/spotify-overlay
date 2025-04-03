@@ -2,27 +2,10 @@
 
 import { Music, Pause, Play } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import the themes object
 import { cn } from "@/lib/utils";
-
-interface Track {
-    album: {
-        images: { url: string }[];
-        name: string;
-    };
-    artists: { name: string }[];
-    name: string;
-    duration_ms: string;
-    raw_duration_ms: number;
-}
-
-interface NowPlaying {
-    is_playing: boolean;
-    item: Track;
-    progress_ms: string;
-    raw_progress_ms: number;
-}
+import { NowPlaying } from "@/types";
+import Ticker from "../ticker";
 
 interface MinimalBarOverlayProps {
     nowPlaying: NowPlaying; // Track currently playing
@@ -91,36 +74,23 @@ export default function MinimalBarOverlay({
 
                 <div className="flex min-w-0 flex-grow flex-col">
                     <div className="overflow-hidden">
-                        {nowPlaying.is_playing ? (
-                            <Marquee
-                                speed={25}
-                                gradient={false}
-                                autoFill
-                                play={nowPlaying.is_playing}
-                                className={cn(
-                                    "text-lg font-bold",
-                                    currentTheme.text
-                                )}
-                            >
-                                {nowPlaying.item.name}{" "}
-                                <span className="mx-2">•</span>
-                            </Marquee>
-                        ) : (
-                            <p
-                                className={cn(
-                                    "text-lg font-bold",
-                                    currentTheme.text
-                                )}
-                            >
-                                {nowPlaying.item.name}
-                            </p>
-                        )}
+                        <Ticker
+                            text={nowPlaying.item.name}
+                            className={cn(
+                                "text-lg font-bold",
+                                currentTheme.text
+                            )}
+                        />
                     </div>
-                    <p className={cn("truncate text-xs", currentTheme.text)}>
-                        {nowPlaying.item.artists
-                            .map((artist) => artist.name)
-                            .join(", ")}
-                    </p>
+                    <div className={cn("text-sm", currentTheme.text)}>
+                        <Ticker
+                            duration={20}
+                            endPadding={5}
+                            text={nowPlaying.item.artists
+                                .map((artist) => artist.name)
+                                .join(", ")}
+                        />
+                    </div>
                 </div>
 
                 {showTimestamp && (

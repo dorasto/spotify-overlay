@@ -5,27 +5,11 @@ import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import Marquee from "react-fast-marquee";
 import { themes } from "@/components/overlays/theme"; // Import themes
 import { CSSProperties } from "react";
-
-interface Track {
-    album: {
-        images: { url: string }[];
-        name: string;
-    };
-    artists: { name: string }[];
-    name: string;
-    duration_ms: string;
-    raw_duration_ms: number;
-}
-
-interface NowPlaying {
-    is_playing: boolean;
-    item: Track;
-    progress_ms: string;
-    raw_progress_ms: number;
-}
+import { positionClasses } from "./positions";
+import { NowPlaying, QueueItems } from "@/types";
+import Ticker, { VerticalTicker } from "../ticker";
 
 interface SpotifyOverlayProps {
     nowPlaying: NowPlaying;
@@ -34,6 +18,12 @@ interface SpotifyOverlayProps {
     className?: string;
     classNameCardContent?: string;
     style?: CSSProperties;
+    position?: keyof typeof positionClasses;
+    showCase?: boolean;
+    background?: "song-image" | "";
+    onMouseDown?: (e: React.MouseEvent) => void;
+    ref?: React.RefObject<HTMLDivElement | null>;
+    queue?: QueueItems[] | null;
 }
 
 export default function SpotifyOverlay({
@@ -42,6 +32,12 @@ export default function SpotifyOverlay({
     theme = "default", // Default theme is "default"
     className,
     style,
+    position = "bottom-right",
+    showCase,
+    background,
+    onMouseDown,
+    ref,
+    queue,
 }: SpotifyOverlayProps) {
     const progressPercentage =
         (nowPlaying.raw_progress_ms / nowPlaying.item.raw_duration_ms) * 100;
@@ -51,15 +47,68 @@ export default function SpotifyOverlay({
         console.error(`Theme "${theme}" not found.`);
         currentTheme = themes["default"]; // Fallback to the default theme if the specified theme is not found
     }
+    let currentPosition = positionClasses[position]; // Get the position class from the imported positionClasses
+    if (!currentPosition) {
+        console.error(`Position "${position}" not found.`);
+        currentPosition = positionClasses["bottom-right"]; // Fallback to the default position if the specified position is not found
+    }
+    if (background === "song-image") {
+        return (
+            <div
+                ref={ref}
+                onMouseDown={onMouseDown}
+                style={{ ...style, overflow: "hidden" }}
+                className={cn(
+                    "rounded-lg",
+                    currentTheme.card,
+                    "w-96",
+                    !showCase && currentPosition,
+                    showCase ? "relative" : "fixed",
+                    className
+                )}
+            >
+                <div
+                    style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundImage: `url(${nowPlaying.item.album.images[0].url})`,
+                        backgroundSize: "cover",
+                        backgroundPosition: "center",
+                        filter: "blur(3px)", // Only applies to the background
+                        WebkitFilter: "blur(3px)",
+                    }}
+                />
+
+                <SpotifyOverlay
+                    nowPlaying={nowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    className={cn("backdrop-blur-none", "right-0 top-0")}
+                    style={{
+                        position: "relative",
+                        zIndex: 10, // Ensures content is above the blurred background
+                        background: "transparent",
+                    }}
+                    queue={queue}
+                />
+            </div>
+        );
+    }
     return (
         <Card
             className={cn(
-                "relative w-96 border-0",
+                "w-96 border-0",
                 "shadow-lg backdrop-blur-lg transition-all duration-300",
                 currentTheme.card, // Apply the theme's card style
-                className
+                currentPosition,
+                className,
+                showCase ? "" : "fixed"
             )}
             style={style}
+            onMouseDown={onMouseDown}
         >
             <CardContent className={cn(showTimestamp ? "pb-3" : "p-1")}>
                 <div className="flex items-center gap-3">
@@ -116,41 +165,23 @@ export default function SpotifyOverlay({
 
                     <div className="flex min-w-0 flex-grow flex-col">
                         <div className="overflow-hidden">
-                            {nowPlaying.is_playing ? (
-                                <Marquee
-                                    speed={25}
-                                    gradient={false}
-                                    autoFill
-                                    play={nowPlaying.is_playing}
-                                    className={cn(
-                                        "text-lg font-bold",
-                                        currentTheme.text
-                                    )}
-                                >
-                                    {nowPlaying.item.name}{" "}
-                                    <span className="mx-2">•</span>
-                                </Marquee>
-                            ) : (
-                                <p
-                                    className={cn(
-                                        "text-lg font-bold",
-                                        currentTheme.text
-                                    )}
-                                >
-                                    {nowPlaying.item.name}
-                                </p>
-                            )}
+                            <Ticker
+                                text={nowPlaying.item.name}
+                                className={cn(
+                                    "text-lg font-bold",
+                                    currentTheme.text
+                                )}
+                            />
                         </div>
-                        <p
-                            className={cn(
-                                "truncate text-sm",
-                                currentTheme.text
-                            )}
-                        >
-                            {nowPlaying.item.artists
-                                .map((artist) => artist.name)
-                                .join(", ")}
-                        </p>
+                        <div className={cn("text-sm", currentTheme.text)}>
+                            <Ticker
+                                duration={20}
+                                endPadding={0}
+                                text={nowPlaying.item.artists
+                                    .map((artist) => artist.name)
+                                    .join(", ")}
+                            />
+                        </div>
 
                         {showTimestamp && (
                             <div
@@ -174,6 +205,27 @@ export default function SpotifyOverlay({
                                 <span>/</span>
                                 <span>{nowPlaying.item.duration_ms}</span>
                             </div>
+                        )}
+                        {queue && (
+                            <VerticalTicker
+                                duration={10}
+                                endPadding={0}
+                                className={cn(
+                                    "text-xs",
+                                    currentTheme.timestampText
+                                )}
+                                number={true}
+                                texts={queue
+                                    .slice(0, 5)
+                                    .map(
+                                        (track) =>
+                                            track.name +
+                                            " - " +
+                                            track.artists
+                                                .map((artist) => artist.name)
+                                                .join(", ")
+                                    )}
+                            />
                         )}
                     </div>
                 </div>

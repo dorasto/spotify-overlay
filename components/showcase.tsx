@@ -4,46 +4,29 @@ import { themes } from "@/components/overlays/theme";
 import SpotifyOverlay from "./overlays";
 import AnimatedOverlay from "./overlays/Animated";
 import MinimalBarOverlay from "./overlays/MinimalBar";
-import { Switch } from "./ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
 import { Label } from "./ui/label";
-
-// Dummy song data
-const song = {
-    is_playing: true,
-    item: {
-        album: {
-            images: [{ url: "/favicon.ico" }], // Placeholder image
-            name: "Doras.to",
-        },
-        artists: [{ name: "Doras.to" }],
-        name: "Doras",
-        duration_ms: "3:50",
-        raw_duration_ms: 390000,
-    },
-    progress_ms: "1:00",
-    raw_progress_ms: 120000,
-};
-
-// Function to generate overlay URLs
-const generateOverlayURL = (
-    style: string,
-    theme: string,
-    showTimestamp?: boolean
-) => {
-    const base = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "";
-    const params = new URLSearchParams();
-
-    if (theme !== "default") params.set("theme", theme);
-    if (style !== "default") params.set("style", style);
-    if (showTimestamp) params.set("timestamp", "true");
-
-    return `${base}/overlay${params.toString() ? `?${params.toString()}` : ""}`;
-};
+import SpotifyOverlayFade from "./overlays/Fade";
+import SpotifyOverlayDynamic from "./overlays/Dynamic";
 
 export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
+    const [song, setSong] = useState<any>({
+        is_playing: true,
+        item: {
+            album: {
+                images: [{ url: "/favicon.ico" }], // Placeholder image
+                name: "Doras.to",
+            },
+            artists: [{ name: "Doras.to" }],
+            name: "Doras",
+            duration_ms: "3:50",
+            raw_duration_ms: 390000,
+        },
+        progress_ms: "1:00",
+        raw_progress_ms: 120000,
+    });
     const [clientLoad, setClientLoad] = useState(false);
     const [showTimestamp, setShowTimestamp] = useState(false); // Toggle state
     const [rootDomain, setRootDomain] = useState("");
@@ -120,7 +103,33 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                         </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
-
+                <div className="flex w-fit flex-col">
+                    <Label>Is Playing</Label>
+                    <ToggleGroup
+                        type="single"
+                        className="rounded-md bg-muted p-1"
+                        value={song.is_playing ? "on" : "off"}
+                        onValueChange={(value) => {
+                            setSong({
+                                ...song,
+                                is_playing: value === "on" ? true : false,
+                            });
+                        }}
+                    >
+                        <ToggleGroupItem
+                            value="on"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            On
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="off"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            Off
+                        </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
                 {/* Toggle Group for View Mode */}
                 <div className="flex w-fit flex-col">
                     <Label>Theme</Label>
@@ -147,6 +156,18 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             className="bg-transparent data-[state=on]:bg-background"
                         >
                             Animated
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="fade"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            Fade
+                        </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="dynamic"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            Dynamic
                         </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
@@ -199,6 +220,10 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                 <TabsTrigger value="animated">
                                     Animated
                                 </TabsTrigger>
+                                <TabsTrigger value="fade">Fade</TabsTrigger>
+                                <TabsTrigger value="dynamic">
+                                    Dynamic
+                                </TabsTrigger>
                             </TabsList>
                             <TabsContent value="standard">
                                 <span className="my-2 block text-white">
@@ -211,11 +236,12 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                     </code>
                                 </span>
                                 {/* Spotify Overlay */}
-                                <div className="flex justify-center">
+                                <div className="flex flex-col justify-center">
                                     <SpotifyOverlay
                                         nowPlaying={song}
                                         theme={themeName as keyof typeof themes}
                                         showTimestamp={showTimestamp}
+                                        showCase
                                     />
                                 </div>
                             </TabsContent>
@@ -256,6 +282,40 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                         showCase
                                     />
                                 </div>
+                            </TabsContent>
+                            <TabsContent value="fade">
+                                <span className="my-2 block text-white">
+                                    <code className="rounded bg-muted px-2 py-1">
+                                        {generateOverlayURL(
+                                            "fade",
+                                            themeName,
+                                            showTimestamp
+                                        )}
+                                    </code>
+                                </span>
+                                <SpotifyOverlayFade
+                                    nowPlaying={song}
+                                    theme={themeName as keyof typeof themes}
+                                    showTimestamp={showTimestamp}
+                                    showCase
+                                />
+                            </TabsContent>
+                            <TabsContent value="dynamic">
+                                <span className="my-2 block text-white">
+                                    <code className="rounded bg-muted px-2 py-1">
+                                        {generateOverlayURL(
+                                            "dynamic",
+                                            themeName,
+                                            showTimestamp
+                                        )}
+                                    </code>
+                                </span>
+                                <SpotifyOverlayDynamic
+                                    nowPlaying={song}
+                                    theme={themeName as keyof typeof themes}
+                                    showTimestamp={showTimestamp}
+                                    showCase
+                                />
                             </TabsContent>
                         </Tabs>
                     </div>

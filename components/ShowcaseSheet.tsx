@@ -15,8 +15,9 @@ export default function ShowcaseSheet() {
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button className="fixed right-0 top-0 bg-transparent text-transparent hover:text-foreground">
-                    <ExpandIcon />
+                <Button className="fixed right-0 top-10 bg-transparent text-transparent hover:text-foreground">
+                    <ExpandIcon className="h-4 w-4" />
+                    <span className="sr-only">Open Showcase</span>
                 </Button>
             </SheetTrigger>
             <SheetContent className="w-full overflow-y-auto p-0 sm:w-full sm:max-w-[100vw]">
@@ -27,9 +28,7 @@ export default function ShowcaseSheet() {
                         with what you prefer
                     </SheetDescription>
                 </SheetHeader>
-                <div className="">
-                    <ThemeShowcase dialog />
-                </div>
+                <ThemeShowcase dialog />
             </SheetContent>
         </Sheet>
     );
