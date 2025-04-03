@@ -1,3 +1,12 @@
+# [1.1.0](https://github.com/dorasto/spotify-overlay/compare/v1.0.5...v1.1.0) (2025-04-03)
+
+
+### Features
+
+* custom ticker ([8af2d92](https://github.com/dorasto/spotify-overlay/commit/8af2d92895d9458d8a138d533ff4eaf9ac028579))
+* Dynamic in showcase ([649f5ca](https://github.com/dorasto/spotify-overlay/commit/649f5cada120423531c292d735a51981f49d6479))
+* twitch chat bot for song ([285099c](https://github.com/dorasto/spotify-overlay/commit/285099c365c2db3717722662d2ca5d9312b7dda2))
+
 ## [1.0.5](https://github.com/dorasto/spotify-overlay/compare/v1.0.4...v1.0.5) (2025-03-13)
 
 
