@@ -226,7 +226,7 @@ export function EditorCanvas({
     return (
         <div
             ref={canvasRef}
-            className="relative h-full w-full bg-background"
+            className="relative h-full w-full bg-background/50"
             style={{
                 width: `${canvasWidth}px`,
                 height: `${canvasHeight}px`,
