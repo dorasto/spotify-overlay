@@ -1,3 +1,10 @@
+## [1.1.1](https://github.com/dorasto/spotify-overlay/compare/v1.1.0...v1.1.1) (2025-04-04)
+
+
+### Bug Fixes
+
+* seo for the site and logo size ([360855a](https://github.com/dorasto/spotify-overlay/commit/360855afb154476543ac43fe9b7d665082273733))
+
 # [1.1.0](https://github.com/dorasto/spotify-overlay/compare/v1.0.5...v1.1.0) (2025-04-03)
 
 
