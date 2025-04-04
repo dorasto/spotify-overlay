@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { IconBrandTwitch } from "@tabler/icons-react";
 
 export default function TwitchConnect() {
     const handleLogin = () => {
@@ -14,21 +14,20 @@ export default function TwitchConnect() {
             <p className="mb-4 text-sm text-gray-300">
                 Connect your Twitch account to enable the !song command in your
                 chat, allowing viewers to see what music you're currently
-                playing.
+                playing
             </p>
 
             <Button
                 onClick={handleLogin}
                 className="flex w-full items-center justify-center bg-purple-600 px-6 py-2 text-white hover:bg-purple-700"
             >
-                <MessageSquare className="mr-2 h-5 w-5" />
-                Login with Twitch
+                <IconBrandTwitch className="mr-2 h-5 w-5" />
+                Connect Twitch
             </Button>
 
             <p className="mt-3 text-xs text-gray-400">
                 Once connected, viewers can type{" "}
-                <span className="font-mono font-bold">!song</span> in your chat
-                to see your current track.
+                <span className="font-mono font-bold">!song</span> in your chat.
             </p>
         </div>
     );

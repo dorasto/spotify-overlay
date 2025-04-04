@@ -10,6 +10,8 @@ import { cn } from "@/lib/utils";
 import { Label } from "./ui/label";
 import SpotifyOverlayFade from "./overlays/Fade";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
+import { Skeleton } from "./ui/skeleton";
+import { positionClasses } from "./overlays/positions";
 
 export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
     const [song, setSong] = useState<any>({
@@ -27,15 +29,13 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
         progress_ms: "1:00",
         raw_progress_ms: 120000,
     });
-    const [clientLoad, setClientLoad] = useState(false);
     const [showTimestamp, setShowTimestamp] = useState(false); // Toggle state
+    const [position, setPosition] =
+        useState<keyof typeof positionClasses>("bottom-right");
     const [rootDomain, setRootDomain] = useState("");
-
     const [globalViewMode, setGlobalViewMode] = useState<string | null>(null);
 
     useEffect(() => {
-        setClientLoad(true);
-
         fetch("/api/env")
             .then((res) => res.json())
             .then((data) => {
@@ -66,11 +66,10 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
         if (theme !== "default") params.set("theme", theme);
         if (style !== "default") params.set("style", style);
         if (showTimestamp) params.set("timestamp", "true");
+        if (position !== "bottom-right") params.set("position", position);
 
         return `${base}/overlay${params.toString() ? `?${params.toString()}` : ""}`;
     };
-
-    if (!clientLoad) return <div className="h-screen bg-zinc-900"></div>;
 
     return (
         <div className="p-6">
@@ -128,6 +127,27 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                         >
                             Off
                         </ToggleGroupItem>
+                    </ToggleGroup>
+                </div>
+                <div className="flex w-fit flex-col">
+                    <Label>Position</Label>
+                    <ToggleGroup
+                        type="single"
+                        className="rounded-md bg-muted p-1"
+                        value={position || undefined}
+                        onValueChange={(value: any) => {
+                            setPosition(value);
+                        }}
+                    >
+                        {Object.keys(positionClasses).map((position) => (
+                            <ToggleGroupItem
+                                key={position}
+                                value={position}
+                                className="bg-transparent data-[state=on]:bg-background"
+                            >
+                                {position}
+                            </ToggleGroupItem>
+                        ))}
                     </ToggleGroup>
                 </div>
                 {/* Toggle Group for View Mode */}
@@ -227,13 +247,17 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsList>
                             <TabsContent value="standard">
                                 <span className="my-2 block text-white">
-                                    <code className="rounded bg-muted px-2 py-1">
-                                        {generateOverlayURL(
-                                            "default",
-                                            themeName,
-                                            showTimestamp
-                                        )}
-                                    </code>
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "default",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
                                 </span>
                                 {/* Spotify Overlay */}
                                 <div className="flex flex-col justify-center">
@@ -247,13 +271,17 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="minimal">
                                 <span className="my-2 block text-white">
-                                    <code className="rounded bg-muted px-2 py-1">
-                                        {generateOverlayURL(
-                                            "minimalBar",
-                                            themeName,
-                                            showTimestamp
-                                        )}
-                                    </code>
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "minimalBar",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
                                 </span>
                                 {/* Minimal Bar Overlay */}
                                 <MinimalBarOverlay
@@ -265,13 +293,17 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="animated">
                                 <span className="my-2 block text-white">
-                                    <code className="rounded bg-muted px-2 py-1">
-                                        {generateOverlayURL(
-                                            "animated",
-                                            themeName,
-                                            showTimestamp
-                                        )}
-                                    </code>
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "animated",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
                                 </span>
                                 {/* Animated Overlay */}
                                 <div className="flex justify-center">
@@ -285,13 +317,17 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="fade">
                                 <span className="my-2 block text-white">
-                                    <code className="rounded bg-muted px-2 py-1">
-                                        {generateOverlayURL(
-                                            "fade",
-                                            themeName,
-                                            showTimestamp
-                                        )}
-                                    </code>
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "fade",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
                                 </span>
                                 <SpotifyOverlayFade
                                     nowPlaying={song}
@@ -302,13 +338,17 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="dynamic">
                                 <span className="my-2 block text-white">
-                                    <code className="rounded bg-muted px-2 py-1">
-                                        {generateOverlayURL(
-                                            "dynamic",
-                                            themeName,
-                                            showTimestamp
-                                        )}
-                                    </code>
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "dynamic",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
                                 </span>
                                 <SpotifyOverlayDynamic
                                     nowPlaying={song}

@@ -5,7 +5,7 @@ import TwitchConnect from "@/components/twitch-connect";
 export default function Page() {
     return (
         <main className="bg-background">
-            <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-row items-center justify-center gap-4">
                 <SpotifyLogin />
                 <TwitchConnect />
             </div>
