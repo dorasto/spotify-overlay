@@ -13,6 +13,7 @@ import QueueOverlay from "./overlays/queue";
 import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
 import { toast } from "sonner";
+import SpotifyOverlayMediaStack from "./overlays/MediaStack";
 
 export default function SpotifyOverlayMiddle({
     _position,
@@ -275,7 +276,16 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
-
+    if (style == "media-stack") {
+        return (
+            <SpotifyOverlayMediaStack
+                nowPlaying={newNowPlaying}
+                showTimestamp={showTimestamp}
+                theme={theme}
+                position={_position ? _position : position}
+            />
+        );
+    }
     return (
         <SpotifyOverlay
             nowPlaying={newNowPlaying}

@@ -12,6 +12,7 @@ import SpotifyOverlayFade from "./overlays/Fade";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
 import { Skeleton } from "./ui/skeleton";
 import { positionClasses } from "./overlays/positions";
+import SpotifyOverlayMediaStack from "./overlays/MediaStack";
 
 export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
     const [song, setSong] = useState<any>({
@@ -189,6 +190,12 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                         >
                             Dynamic
                         </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="media-stack"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            MediaStack
+                        </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
             </div>
@@ -196,7 +203,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
             {/* Grid for Overlays */}
             <div
                 className={cn(
-                    "grid grid-cols-1 gap-6 md:grid-cols-3 lg:grid-cols-4",
+                    "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
                     dialog && "grid-cols-1 md:grid-cols-1 lg:grid-cols-1"
                 )}
             >
@@ -243,6 +250,9 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                 <TabsTrigger value="fade">Fade</TabsTrigger>
                                 <TabsTrigger value="dynamic">
                                     Dynamic
+                                </TabsTrigger>
+                                <TabsTrigger value="media-stack">
+                                    MediaStack
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value="standard">
@@ -351,6 +361,27 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                     )}
                                 </span>
                                 <SpotifyOverlayDynamic
+                                    nowPlaying={song}
+                                    theme={themeName as keyof typeof themes}
+                                    showTimestamp={showTimestamp}
+                                    showCase
+                                />
+                            </TabsContent>
+                            <TabsContent value="media-stack">
+                                <span className="my-2 block text-white">
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "media-stack",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
+                                </span>
+                                <SpotifyOverlayMediaStack
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
                                     showTimestamp={showTimestamp}
