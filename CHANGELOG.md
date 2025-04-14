@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/dorasto/spotify-overlay/compare/v1.1.1...v1.2.0) (2025-04-14)
+
+
+### Features
+
+* new style called MediaStack ([99cf455](https://github.com/dorasto/spotify-overlay/commit/99cf455181f2fc0ce6b12160d19bb74e679b61ff))
+
 ## [1.1.1](https://github.com/dorasto/spotify-overlay/compare/v1.1.0...v1.1.1) (2025-04-04)
 
 
