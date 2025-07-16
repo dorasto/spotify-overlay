@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/dorasto/spotify-overlay/compare/v1.2.0...v1.3.0) (2025-07-16)
+
+
+### Features
+
+* Song Request ([f9b534d](https://github.com/dorasto/spotify-overlay/commit/f9b534d5f7ba3854e19ea6efac4cc8c1238011c5))
+
 # [1.2.0](https://github.com/dorasto/spotify-overlay/compare/v1.1.1...v1.2.0) (2025-04-14)
 
 
