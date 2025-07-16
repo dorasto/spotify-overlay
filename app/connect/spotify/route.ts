@@ -6,6 +6,7 @@ export async function GET() {
     const scope = [
         "user-read-playback-state",
         "user-read-currently-playing",
+        "user-modify-playback-state",
     ].join(" ");
 
     const client_id = process.env.SPOTIFY_CLIENT_ID;
