@@ -6,7 +6,7 @@
   "repository": "https://github.com/dorasto/spotify-overlay",
   "author": "trent-001",
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev -p 5434",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"

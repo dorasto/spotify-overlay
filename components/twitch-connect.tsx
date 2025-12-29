@@ -10,12 +10,67 @@ export default function TwitchConnect() {
 
     return (
         <div className="max-w-md rounded-xl border border-zinc-700 bg-zinc-900/90 p-6 text-center text-white shadow-lg">
-            <h1 className="mb-3 text-3xl font-bold">💬 Twitch Commands</h1>
+            <h1 className="mb-3 text-3xl font-bold">💬 Twitch Chat Bot</h1>
+
             <p className="mb-4 text-sm text-gray-300">
-                Connect your Twitch account to enable the !song command in your
-                chat, allowing viewers to see what music you're currently
-                playing
+                Connect your Twitch account to enable interactive chat commands
+                and automatic song announcements directly in your stream chat.
             </p>
+
+            <div className="mb-4 rounded-lg bg-zinc-800 p-4 text-left text-sm text-gray-300">
+                <p className="mb-2 font-semibold text-white">
+                    ✅ Available Commands
+                </p>
+                <ul className="list-inside list-disc space-y-1">
+                    <li>
+                        <span className="font-mono text-white">!song</span> —
+                        shows the current or last played Spotify track
+                    </li>
+                    <li>
+                        <span className="font-mono text-white">!queue</span> —
+                        shows the next songs in the Spotify queue
+                    </li>
+                    <li>
+                        <span className="font-mono text-white">
+                            !sr &lt;url&gt;
+                        </span>{" "}
+                        — lets viewers request songs{" "}
+                        <span className="text-zinc-400">
+                            (Spotify Premium required)
+                        </span>
+                    </li>
+                    <li>
+                        <span className="font-mono text-white">!commands</span>{" "}
+                        — lists all available bot commands
+                    </li>
+                    <li>
+                        <span className="font-mono text-white">!ping</span> —
+                        checks if the bot is online
+                    </li>
+                </ul>
+            </div>
+
+            <div className="mb-4 rounded-lg bg-zinc-800 p-4 text-left text-sm text-gray-300">
+                <p className="mb-2 font-semibold text-white">
+                    ⚙️ Overlay URL Options
+                </p>
+                <ul className="list-inside list-disc space-y-1">
+                    <li>
+                        <span className="font-mono text-white">
+                            ?autoAnnounce=true
+                        </span>{" "}
+                        — automatically announces songs when they change
+                    </li>
+                    <li>
+                        <span className="font-mono text-white">?sr=true</span>{" "}
+                        — enables viewer song requests via{" "}
+                        <span className="font-mono text-white">!sr</span>{" "}
+                        <span className="text-zinc-400">
+                            (Spotify Premium required)
+                        </span>
+                    </li>
+                </ul>
+            </div>
 
             <Button
                 onClick={handleLogin}
@@ -26,8 +81,8 @@ export default function TwitchConnect() {
             </Button>
 
             <p className="mt-3 text-xs text-gray-400">
-                Once connected, viewers can type{" "}
-                <span className="font-mono font-bold">!song</span> in your chat.
+                After connecting, copy the provided overlay URL into your OBS
+                Browser Source.
             </p>
         </div>
     );

@@ -21,109 +21,95 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
+import { parseAsString, useQueryState } from "nuqs";
 
 export function SettingsSheet() {
-    const [spotifyCode, setSpotifyCode] = useState("");
-    const [twitchCode, setTwitchCode] = useState("");
     const [isSpotifyConnected, setIsSpotifyConnected] = useState(false);
     const [isTwitchConnected, setIsTwitchConnected] = useState(false);
+
+    const [twitchQueryCode] = useQueryState(
+        "twitch",
+        parseAsString.withDefault("")
+    );
+
     useEffect(() => {
-        // Check if Spotify is connected
         const spotifyToken = localStorage.getItem("spotify_access_token");
         setIsSpotifyConnected(!!spotifyToken);
 
-        // Check if Twitch is connected
         const twitchToken = localStorage.getItem("twitch_access_token");
         setIsTwitchConnected(!!twitchToken);
     }, []);
-    const handleSaveTwitchCode = async () => {
-        try {
-            const response = await fetch("/connect/twitch/code", {
-                method: "POST",
-                body: JSON.stringify({
-                    code: twitchCode,
-                }),
-            });
-            if (response.status == 200) {
-                const data = await response.json();
-                toast.success("Twitch code saved");
-                localStorage.setItem(
-                    "twitch_access_token",
-                    data.token.access_token
-                );
-                localStorage.setItem(
-                    "twitch_refresh_token",
-                    data.token.refresh_token
-                );
-                localStorage.setItem(
-                    "twitch_token_expires_at",
-                    data.token.expires_in
-                );
-                localStorage.setItem("twitch_username", data.user.login);
-                window.location.reload();
-            } else {
-                toast.error("Error saving twitch code");
-                console.log(response);
+
+    useEffect(() => {
+        if (!twitchQueryCode) return;
+        if (localStorage.getItem("twitch_access_token")) return;
+
+        const saveTwitchCode = async () => {
+            try {
+                const response = await fetch("/connect/twitch/code", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: twitchQueryCode }),
+                });
+
+                if (response.status === 200) {
+                    const data = await response.json();
+
+                    localStorage.setItem(
+                        "twitch_access_token",
+                        data.token.access_token
+                    );
+                    localStorage.setItem(
+                        "twitch_refresh_token",
+                        data.token.refresh_token
+                    );
+                    localStorage.setItem(
+                        "twitch_token_expires_at",
+                        data.token.expires_in
+                    );
+                    localStorage.setItem(
+                        "twitch_username",
+                        data.user.login
+                    );
+
+                    setIsTwitchConnected(true);
+                    toast.success("Twitch connected");
+
+                    const url = new URL(window.location.href);
+                    url.searchParams.delete("twitch");
+                    window.history.replaceState({}, "", url.toString());
+                    window.location.reload();
+                }
+            } catch (error) {
+                console.error("Error saving twitch code:", error);
             }
-        } catch (error) {
-            console.error("Error fetching twitch info:", error);
-        }
-    };
-    const handleSaveSpotifyCode = async () => {
-        try {
-            const response = await fetch("/connect/spotify/code", {
-                method: "POST",
-                body: JSON.stringify({
-                    code: spotifyCode,
-                }),
-            });
-            if (response.status == 200) {
-                const data = await response.json();
-                toast.success("Spotify code saved");
-                localStorage.setItem("spotify_access_token", data.access_token);
-                localStorage.setItem(
-                    "spotify_refresh_token",
-                    data.refresh_token
-                );
-                localStorage.setItem(
-                    "spotify_token_expires_at",
-                    data.expires_in
-                );
-                window.location.reload();
-            } else {
-                toast.error("Error saving spotify code");
-                console.log(response);
-            }
-        } catch (error) {
-            console.error("Error fetching now playing:", error);
-        }
-    };
+        };
+
+        saveTwitchCode();
+    }, [twitchQueryCode]);
+
     const handleDisconnectSpotify = () => {
-        // Remove Spotify tokens from localStorage
         localStorage.removeItem("spotify_access_token");
         localStorage.removeItem("spotify_refresh_token");
         localStorage.removeItem("spotify_token_expires_at");
 
-        // Update state
         setIsSpotifyConnected(false);
         toast.success("Spotify disconnected");
         window.location.reload();
     };
 
     const handleDisconnectTwitch = () => {
-        // Remove Twitch tokens from localStorage
         localStorage.removeItem("twitch_access_token");
         localStorage.removeItem("twitch_refresh_token");
         localStorage.removeItem("twitch_token_expires_at");
         localStorage.removeItem("twitch_username");
 
-        // Update state
         setIsTwitchConnected(false);
         toast.success("Twitch disconnected");
         window.location.reload();
     };
+
     return (
         <Sheet>
             <SheetTrigger asChild>
@@ -136,7 +122,8 @@ export function SettingsSheet() {
                 <SheetHeader className="sticky top-0 z-40 border-b bg-background p-4">
                     <SheetTitle>Settings</SheetTitle>
                     <SheetDescription>
-                        Configure your integration codes for Spotify and Twitch
+                        Connect Spotify and Twitch to enable overlays and chat
+                        commands
                     </SheetDescription>
                 </SheetHeader>
 
@@ -154,35 +141,35 @@ export function SettingsSheet() {
                                         Spotify Music Integration
                                     </CardTitle>
                                     <CardDescription>
-                                        Enter your Spotify code to enable music
-                                        tracking.
+                                        Show your currently playing song on
+                                        stream.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid gap-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="spotify-code">
-                                                Spotify Music Code
-                                            </Label>
-                                            <Input
-                                                id="spotify-code"
-                                                placeholder="Enter your Spotify code"
-                                                value={spotifyCode}
-                                                onChange={(e) =>
-                                                    setSpotifyCode(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">
-                                                This code connects to Spotify to
-                                                play and track music in your
-                                                stream.
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <ol className="list-inside list-decimal space-y-2 text-sm text-muted-foreground">
+                                        <li>
+                                            Go to the website and click{" "}
+                                            <strong>Connect Spotify</strong>.
+                                        </li>
+                                        <li>
+                                            Log in to Spotify and approve access.
+                                        </li>
+                                        <li>
+                                            You will be given a special overlay
+                                            URL.
+                                        </li>
+                                        <li>
+                                            Copy that URL and paste it into your{" "}
+                                            <strong>
+                                                OBS Browser Source URL
+                                            </strong>
+                                            .
+                                        </li>
+                                        <li>
+                                            The overlay will automatically
+                                            connect
+                                        </li>
+                                    </ol>
                                 </CardContent>
                                 <CardFooter>
                                     {isSpotifyConnected ? (
@@ -193,8 +180,8 @@ export function SettingsSheet() {
                                             Disconnect Spotify
                                         </Button>
                                     ) : (
-                                        <Button onClick={handleSaveSpotifyCode}>
-                                            Save Spotify Code
+                                        <Button disabled>
+                                            Waiting for Spotify authorization
                                         </Button>
                                     )}
                                 </CardFooter>
@@ -208,36 +195,33 @@ export function SettingsSheet() {
                                         Twitch Chat Command Integration
                                     </CardTitle>
                                     <CardDescription>
-                                        Enter your Twitch code to enable the
-                                        !song command in chat.
+                                        Enable chat commands like !song.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
-                                    <div className="grid gap-4">
-                                        <div className="grid gap-2">
-                                            <Label htmlFor="twitch-code">
-                                                Twitch Command Code
-                                            </Label>
-                                            <Input
-                                                id="twitch-code"
-                                                placeholder="Enter your Twitch code"
-                                                value={twitchCode}
-                                                onChange={(e) =>
-                                                    setTwitchCode(
-                                                        e.target.value
-                                                    )
-                                                }
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">
-                                                This code enables the !song
-                                                command in your Twitch chat,
-                                                allowing viewers to check what
-                                                song is currently playing.
-                                            </p>
-                                        </div>
-                                    </div>
+                                    <ol className="list-inside list-decimal space-y-2 text-sm text-muted-foreground">
+                                        <li>
+                                            Go to the website and click{" "}
+                                            <strong>Connect Twitch</strong>.
+                                        </li>
+                                        <li>
+                                            Log in to Twitch and approve access.
+                                        </li>
+                                        <li>
+                                            You will receive an overlay URL.
+                                        </li>
+                                        <li>
+                                            Copy the URL and paste it into your{" "}
+                                            <strong>
+                                                OBS Browser Source URL
+                                            </strong>
+                                            .
+                                        </li>
+                                        <li>
+                                            Twitch will connect automatically
+                                            and enable chat commands.
+                                        </li>
+                                    </ol>
                                 </CardContent>
                                 <CardFooter>
                                     {isTwitchConnected ? (
@@ -248,8 +232,8 @@ export function SettingsSheet() {
                                             Disconnect Twitch
                                         </Button>
                                     ) : (
-                                        <Button onClick={handleSaveTwitchCode}>
-                                            Save Twitch Code
+                                        <Button disabled>
+                                            Waiting for Twitch authorization
                                         </Button>
                                     )}
                                 </CardFooter>

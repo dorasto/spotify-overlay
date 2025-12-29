@@ -16,8 +16,10 @@ import { toast } from "sonner";
 import SpotifyOverlayMediaStack from "./overlays/MediaStack";
 
 export default function SpotifyOverlayMiddle({
+    firstLoadToken,
     _position,
 }: {
+    firstLoadToken?: string;
     _position?: string;
 }) {
     const [noToken, setNoToken] = useState(false);
@@ -58,6 +60,7 @@ export default function SpotifyOverlayMiddle({
         "background",
         parseAsString.withDefault("")
     );
+
     useEffect(() => {
         if (!token) {
             setNoToken(true);
@@ -84,16 +87,15 @@ export default function SpotifyOverlayMiddle({
         }
     }, [nowPlaying?.item.name, nowPlaying?.is_playing]);
 
-    const saveCode = async () => {
+    const saveCodeWithValue = async (code: string) => {
         try {
             const response = await fetch("/connect/spotify/code", {
                 method: "POST",
-                body: JSON.stringify({
-                    code: inputCode,
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
             });
+
             if (response.status == 200) {
-                toast.success("Spotify code saved");
                 const data = await response.json();
                 setToken(data.access_token);
                 setRefreshToken(data.refresh_token);
@@ -102,14 +104,31 @@ export default function SpotifyOverlayMiddle({
                     data.expires_in
                 );
                 setNoToken(false);
+                toast.success("Spotify code saved");
             } else {
+                setNoToken(true);
                 toast.error("Error saving spotify code");
-                console.log(response);
             }
         } catch (error) {
-            console.error("Error fetching now playing:", error);
+            console.error("Error saving spotify code:", error);
+            setNoToken(true);
         }
     };
+
+    const saveCode = async () => {
+        saveCodeWithValue(inputCode);
+    };
+
+    useEffect(() => {
+        if (!firstLoadToken) return;
+        if (token) return;
+
+        saveCodeWithValue(firstLoadToken);
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete("token");
+        window.history.replaceState({}, "", url.toString());
+    }, [firstLoadToken]);
 
     const getRefreshToken = async () => {
         if (!refreshToken) return;
@@ -166,6 +185,7 @@ export default function SpotifyOverlayMiddle({
             console.error("Error fetching now playing:", error);
         }
     };
+
     const fetchQueue = async () => {
         if (!token) return;
         try {
@@ -178,7 +198,6 @@ export default function SpotifyOverlayMiddle({
             if (response.status == 200) {
                 const data = await response.json();
                 setQueue(data.queue);
-            } else if (response.status == 401) {
             } else {
                 console.log(response);
             }
@@ -193,7 +212,7 @@ export default function SpotifyOverlayMiddle({
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
 
-    if (noToken) {
+    if (noToken && !firstLoadToken) {
         return (
             <div className="flex flex-col items-center gap-2 rounded-lg bg-black/70 p-4">
                 <p className="text-white">Enter your Spotify code:</p>
@@ -211,6 +230,7 @@ export default function SpotifyOverlayMiddle({
     }
 
     if (!nowPlaying || !nowPlaying.item) return null;
+
     const newNowPlaying = {
         ...nowPlaying,
         progress_ms: formatTime(nowPlaying.progress_ms),
@@ -221,6 +241,7 @@ export default function SpotifyOverlayMiddle({
             raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
         },
     };
+
     if (style == "minimalBar") {
         return (
             <MinimalBarOverlay
@@ -230,6 +251,7 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
+
     if (style == "animated") {
         return (
             <AnimatedOverlay
@@ -241,6 +263,7 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
+
     if (style == "fade") {
         return (
             <SpotifyOverlayFade
@@ -252,6 +275,7 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
+
     if (style == "queue") {
         return (
             <QueueOverlay
@@ -264,6 +288,7 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
+
     if (style == "dynamic") {
         return (
             <SpotifyOverlayDynamic
@@ -276,6 +301,7 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
+
     if (style == "media-stack") {
         return (
             <SpotifyOverlayMediaStack
@@ -286,6 +312,7 @@ export default function SpotifyOverlayMiddle({
             />
         );
     }
+
     return (
         <SpotifyOverlay
             nowPlaying={newNowPlaying}
