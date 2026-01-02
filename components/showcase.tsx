@@ -13,6 +13,7 @@ import SpotifyOverlayDynamic from "./overlays/Dynamic";
 import { Skeleton } from "./ui/skeleton";
 import { positionClasses } from "./overlays/positions";
 import SpotifyOverlayMediaStack from "./overlays/MediaStack";
+import SpotifyOverlayAI from "./overlays/Ai";
 
 export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
     const [song, setSong] = useState<any>({
@@ -196,6 +197,12 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                         >
                             MediaStack
                         </ToggleGroupItem>
+                        <ToggleGroupItem
+                            value="ai"
+                            className="bg-transparent data-[state=on]:bg-background"
+                        >
+                            AI made this
+                        </ToggleGroupItem>
                     </ToggleGroup>
                 </div>
             </div>
@@ -253,6 +260,9 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                 </TabsTrigger>
                                 <TabsTrigger value="media-stack">
                                     MediaStack
+                                </TabsTrigger>
+                                <TabsTrigger value="ai">
+                                    AI made this
                                 </TabsTrigger>
                             </TabsList>
                             <TabsContent value="standard">
@@ -382,6 +392,27 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                                     )}
                                 </span>
                                 <SpotifyOverlayMediaStack
+                                    nowPlaying={song}
+                                    theme={themeName as keyof typeof themes}
+                                    showTimestamp={showTimestamp}
+                                    showCase
+                                />
+                            </TabsContent>
+                            <TabsContent value="ai">
+                                <span className="my-2 block text-white">
+                                    {rootDomain.length === 0 ? (
+                                        <Skeleton className="h-6 w-full" />
+                                    ) : (
+                                        <code className="rounded bg-muted px-2 py-1">
+                                            {generateOverlayURL(
+                                                "ai",
+                                                themeName,
+                                                showTimestamp
+                                            )}
+                                        </code>
+                                    )}
+                                </span>
+                                <SpotifyOverlayAI
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
                                     showTimestamp={showTimestamp}

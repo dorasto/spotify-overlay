@@ -14,7 +14,12 @@ interface MyItem {
     scale: number;
     zoomLevel: number;
 }
-export default function CustomOverlayEditor() {
+export default function CustomOverlayEditor({
+        firstLoadToken,
+
+}:{
+        firstLoadToken?: string;
+}) {
     const [canvasWidthAndHeight, setCanvasWidthAndHeight] = useState({
         width: 1920,
         height: 1080,
@@ -78,7 +83,7 @@ export default function CustomOverlayEditor() {
                 />
             ) : (
                 <div className="absolute" style={style}>
-                    <SpotifyOverlayMiddle />
+                    <SpotifyOverlayMiddle firstLoadToken={firstLoadToken}/>
                 </div>
             )}
         </div>

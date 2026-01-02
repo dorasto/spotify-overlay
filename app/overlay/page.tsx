@@ -4,7 +4,8 @@ import SpotifyOverlayMiddle from "@/components/spotify-overlay";
 import TwitchBotChat from "@/components/twitch";
 import Zoom from "@/components/zoom";
 
-export default async function Page() {
+export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+    const { token } = await searchParams;
     return (
         <div className="w-full">
             <Zoom />
@@ -12,7 +13,7 @@ export default async function Page() {
             <ShowcaseSheet />
             <TwitchBotChat />
             <div className="absolute">
-                <SpotifyOverlayMiddle />
+                <SpotifyOverlayMiddle firstLoadToken={token as string} />
             </div>
         </div>
     );

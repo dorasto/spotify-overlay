@@ -14,11 +14,18 @@ import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
 import { toast } from "sonner";
 import SpotifyOverlayMediaStack from "./overlays/MediaStack";
+import SpotifyOverlayAI from "./overlays/Ai";
+import { themes } from "./overlays/theme";
+import { positionClasses } from "./overlays/positions";
 
 export default function SpotifyOverlayMiddle({
+    firstLoadToken,
     _position,
+    mockData,
 }: {
+    firstLoadToken?: string;
     _position?: string;
+    mockData?: { nowPlaying: NowPlaying; queue?: QueueItems[] | null };
 }) {
     const [noToken, setNoToken] = useState(false);
     const [inputCode, setInputCode] = useState("");
@@ -58,6 +65,32 @@ export default function SpotifyOverlayMiddle({
         "background",
         parseAsString.withDefault("")
     );
+    if (mockData?.nowPlaying) {
+        const { nowPlaying: np, queue: mockQueue } = mockData;
+
+        const newNowPlaying = {
+            ...np,
+            progress_ms: np.progress_ms,
+            raw_progress_ms: Number(np.progress_ms),
+            item: {
+                ...np.item,
+                duration_ms: np.item.duration_ms,
+                raw_duration_ms: Number(np.item.duration_ms),
+            },
+        };
+
+        return renderOverlay({
+            style,
+            position,
+            _position,
+            newNowPlaying,
+            showTimestamp,
+            theme,
+            autoHide,
+            background,
+            queue: mockQueue,
+        });
+    }
     useEffect(() => {
         if (!token) {
             setNoToken(true);
@@ -84,16 +117,15 @@ export default function SpotifyOverlayMiddle({
         }
     }, [nowPlaying?.item.name, nowPlaying?.is_playing]);
 
-    const saveCode = async () => {
+    const saveCodeWithValue = async (code: string) => {
         try {
             const response = await fetch("/connect/spotify/code", {
                 method: "POST",
-                body: JSON.stringify({
-                    code: inputCode,
-                }),
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ code }),
             });
+
             if (response.status == 200) {
-                toast.success("Spotify code saved");
                 const data = await response.json();
                 setToken(data.access_token);
                 setRefreshToken(data.refresh_token);
@@ -102,14 +134,31 @@ export default function SpotifyOverlayMiddle({
                     data.expires_in
                 );
                 setNoToken(false);
+                toast.success("Spotify code saved");
             } else {
+                setNoToken(true);
                 toast.error("Error saving spotify code");
-                console.log(response);
             }
         } catch (error) {
-            console.error("Error fetching now playing:", error);
+            console.error("Error saving spotify code:", error);
+            setNoToken(true);
         }
     };
+
+    const saveCode = async () => {
+        saveCodeWithValue(inputCode);
+    };
+
+    useEffect(() => {
+        if (!firstLoadToken) return;
+        if (token) return;
+
+        saveCodeWithValue(firstLoadToken);
+
+        const url = new URL(window.location.href);
+        url.searchParams.delete("token");
+        window.history.replaceState({}, "", url.toString());
+    }, [firstLoadToken]);
 
     const getRefreshToken = async () => {
         if (!refreshToken) return;
@@ -166,6 +215,7 @@ export default function SpotifyOverlayMiddle({
             console.error("Error fetching now playing:", error);
         }
     };
+
     const fetchQueue = async () => {
         if (!token) return;
         try {
@@ -178,7 +228,6 @@ export default function SpotifyOverlayMiddle({
             if (response.status == 200) {
                 const data = await response.json();
                 setQueue(data.queue);
-            } else if (response.status == 401) {
             } else {
                 console.log(response);
             }
@@ -193,7 +242,7 @@ export default function SpotifyOverlayMiddle({
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
 
-    if (noToken) {
+    if (noToken && !firstLoadToken) {
         return (
             <div className="flex flex-col items-center gap-2 rounded-lg bg-black/70 p-4">
                 <p className="text-white">Enter your Spotify code:</p>
@@ -211,6 +260,7 @@ export default function SpotifyOverlayMiddle({
     }
 
     if (!nowPlaying || !nowPlaying.item) return null;
+
     const newNowPlaying = {
         ...nowPlaying,
         progress_ms: formatTime(nowPlaying.progress_ms),
@@ -221,78 +271,112 @@ export default function SpotifyOverlayMiddle({
             raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
         },
     };
-    if (style == "minimalBar") {
-        return (
-            <MinimalBarOverlay
-                nowPlaying={newNowPlaying}
-                showTimestamp={showTimestamp}
-                theme={theme}
-            />
-        );
+    return renderOverlay({
+        style,
+        position,
+        _position,
+        newNowPlaying,
+        showTimestamp,
+        theme,
+        autoHide,
+        background,
+        queue,
+    });
+}
+
+function renderOverlay({
+    style,
+    newNowPlaying,
+    showTimestamp,
+    theme,
+    position,
+    _position,
+    autoHide,
+    background,
+    queue,
+}: {
+    style: string;
+    newNowPlaying: any;
+    showTimestamp: boolean;
+    theme?: keyof typeof themes;
+    position?: keyof typeof positionClasses;
+    _position?: string;
+    autoHide?: boolean;
+    background?: "song-image" | "";
+    queue?: QueueItems[] | null;
+}) {
+    switch (style) {
+        case "minimalBar":
+            return <MinimalBarOverlay nowPlaying={newNowPlaying} showTimestamp={showTimestamp} theme={theme} />;
+        case "animated":
+            return (
+                <AnimatedOverlay
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                    autoHide={autoHide}
+                />
+            );
+        case "fade":
+            return (
+                <SpotifyOverlayFade
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                    background={background}
+                />
+            );
+        case "queue":
+            return (
+                <QueueOverlay
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                    background={background}
+                    queue={queue || null}
+                />
+            );
+        case "dynamic":
+            return (
+                <SpotifyOverlayDynamic
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                    background={background}
+                    queue={queue}
+                />
+            );
+        case "media-stack":
+            return (
+                <SpotifyOverlayMediaStack
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                />
+            );
+        case "ai":
+            return (
+                <SpotifyOverlayAI
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                />
+            );
+        default:
+            return (
+                <SpotifyOverlay
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                    background={background}
+                />
+            );
     }
-    if (style == "animated") {
-        return (
-            <AnimatedOverlay
-                nowPlaying={newNowPlaying}
-                showTimestamp={showTimestamp}
-                theme={theme}
-                position={_position ? _position : position}
-                autoHide={autoHide}
-            />
-        );
-    }
-    if (style == "fade") {
-        return (
-            <SpotifyOverlayFade
-                nowPlaying={newNowPlaying}
-                showTimestamp={showTimestamp}
-                theme={theme}
-                position={_position ? _position : position}
-                background={background}
-            />
-        );
-    }
-    if (style == "queue") {
-        return (
-            <QueueOverlay
-                nowPlaying={newNowPlaying}
-                showTimestamp={showTimestamp}
-                theme={theme}
-                position={_position ? _position : position}
-                background={background}
-                queue={queue}
-            />
-        );
-    }
-    if (style == "dynamic") {
-        return (
-            <SpotifyOverlayDynamic
-                nowPlaying={newNowPlaying}
-                showTimestamp={showTimestamp}
-                theme={theme}
-                position={_position ? _position : position}
-                background={background}
-                queue={queue}
-            />
-        );
-    }
-    if (style == "media-stack") {
-        return (
-            <SpotifyOverlayMediaStack
-                nowPlaying={newNowPlaying}
-                showTimestamp={showTimestamp}
-                theme={theme}
-                position={_position ? _position : position}
-            />
-        );
-    }
-    return (
-        <SpotifyOverlay
-            nowPlaying={newNowPlaying}
-            showTimestamp={showTimestamp}
-            theme={theme}
-            position={_position ? _position : position}
-            background={background}
-        />
-    );
 }

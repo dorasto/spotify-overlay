@@ -10,9 +10,11 @@ export default function TwitchCallback({
     searchParams: { code?: string };
 }) {
     const [copied, setCopied] = useState(false);
+
     const handleCopy = () => {
         if (searchParams.code) {
-            navigator.clipboard.writeText(searchParams.code); // Copy the code
+            const overlayUrl = `${rootDomain}/overlay?twitch=${searchParams.code}`;
+            navigator.clipboard.writeText(overlayUrl);
             setCopied(true);
             setTimeout(() => {
                 setCopied(false);
@@ -37,57 +39,35 @@ export default function TwitchCallback({
 
                 <ol className="mb-5 list-inside list-decimal space-y-2 text-left text-sm text-zinc-300">
                     <li>
-                        Make sure you have the overlay added as a Browser Source
-                        in OBS pointing to{" "}
-                        <strong className="text-white">
-                            {rootDomain}/overlay
-                        </strong>
-                    </li>
-                    <li>
-                        In OBS,{" "}
-                        <strong className="text-white">
-                            click on your Browser Source
-                        </strong>{" "}
-                        in the Sources list to select it
+                        In OBS, add (or select) a{" "}
+                        <strong className="text-white">Browser Source</strong>{" "}
+                        in your scene.
                     </li>
                     <li>
                         Click the{" "}
-                        <strong className="text-white">"Interact"</strong>{" "}
-                        button in the toolbar that appears above your sources:
-                        <div className="mt-2 flex justify-center">
-                            <img
-                                src="https://cdn.doras.to/doras/assets/473c9e74-3a3b-49ed-a47c-f6463caa6ede/23f7c051-8f4b-446b-8293-bdaaf3b939fd.png"
-                                alt="OBS Interact Button"
-                                className="rounded border border-zinc-600"
-                                width={300}
-                                height={40}
-                            />
-                        </div>
+                        <strong className="text-white">Copy Overlay URL</strong>{" "}
+                        button below.
                     </li>
                     <li>
-                        In the interaction window that opens, click on the{" "}
-                        <strong className="text-white">settings icon</strong> in
-                        the{" "}
-                        <strong className="text-white">top right corner</strong>{" "}
-                        of the overlay
+                        Paste the copied URL into the{" "}
+                        <strong className="text-white">URL field</strong> of the
+                        Browser Source settings.
                     </li>
                     <li>
-                        In the settings panel that appears, click on the{" "}
-                        <strong className="text-white">Twitch tab</strong>
+                        Click{" "}
+                        <strong className="text-white">OK</strong> to apply the
+                        changes.
                     </li>
                     <li>
-                        Paste the code below into the input field labeled
-                        "Twitch Command Code"
+                        Make sure the Browser Source is{" "}
+                        <strong className="text-white">visible</strong> in your
+                        scene.
                     </li>
                     <li>
-                        Click the{" "}
-                        <strong className="text-white">Save Twitch Code</strong>{" "}
-                        button to complete the connection
-                    </li>
-                    <li>
-                        Once connected, your viewers can type{" "}
-                        <strong className="text-white">!song</strong> in your
-                        Twitch chat to see what song is currently playing
+                        The overlay will automatically connect to Twitch and
+                        enable{" "}
+                        <strong className="text-white">!song</strong>{" "}
+                        commands in chat.
                     </li>
                 </ol>
 
@@ -100,12 +80,12 @@ export default function TwitchCallback({
                     onClick={handleCopy}
                     disabled={copied}
                 >
-                    {copied ? "✅ Code Copied!" : "Copy Twitch Code"}
+                    {copied ? "✅ URL Copied!" : "Copy Overlay URL"}
                 </button>
+
                 {copied && (
                     <p className="mt-2 text-sm text-green-400">
-                        Now paste this code in the Twitch tab of your overlay
-                        settings!
+                        Paste this URL into your OBS Browser Source settings.
                     </p>
                 )}
             </div>
