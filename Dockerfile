@@ -3,8 +3,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 FROM base AS deps
-RUN apk add --no-cache python3 make g++
-COPY package.json pnpm-lock.yaml .npmrc ./
+COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm
 RUN pnpm install --no-frozen-lockfile
 
@@ -26,7 +25,6 @@ RUN addgroup --system --gid 1001 nodejs && \
 
 COPY --from=builder /app/public ./public
 
-RUN mkdir -p /app/data && chown -R nextjs:nodejs /app/data
 RUN mkdir -p /app/.next && chown nextjs:nodejs /app/.next
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

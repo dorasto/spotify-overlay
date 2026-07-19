@@ -1,30 +1,30 @@
-import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
+import { pgTable, text, boolean, timestamp } from "drizzle-orm/pg-core";
 
-export const user = sqliteTable("user", {
+export const user = pgTable("user", {
     id: text("id").primaryKey(),
     name: text("name").notNull(),
     email: text("email").notNull().unique(),
-    emailVerified: integer("emailVerified", { mode: "boolean" }).notNull(),
+    emailVerified: boolean("emailVerified").notNull(),
     image: text("image"),
     overlayToken: text("overlayToken").unique(),
-    createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
 });
 
-export const session = sqliteTable("session", {
+export const session = pgTable("session", {
     id: text("id").primaryKey(),
     userId: text("userId")
         .notNull()
         .references(() => user.id),
     token: text("token").notNull().unique(),
-    expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
+    expiresAt: timestamp("expiresAt").notNull(),
     ipAddress: text("ipAddress"),
     userAgent: text("userAgent"),
-    createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
 });
 
-export const account = sqliteTable("account", {
+export const account = pgTable("account", {
     id: text("id").primaryKey(),
     userId: text("userId")
         .notNull()
@@ -34,24 +34,24 @@ export const account = sqliteTable("account", {
     accessToken: text("accessToken"),
     refreshToken: text("refreshToken"),
     idToken: text("idToken"),
-    accessTokenExpiresAt: integer("accessTokenExpiresAt", { mode: "timestamp" }),
-    refreshTokenExpiresAt: integer("refreshTokenExpiresAt", { mode: "timestamp" }),
+    accessTokenExpiresAt: timestamp("accessTokenExpiresAt"),
+    refreshTokenExpiresAt: timestamp("refreshTokenExpiresAt"),
     scope: text("scope"),
     password: text("password"),
-    createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
 });
 
-export const verification = sqliteTable("verification", {
+export const verification = pgTable("verification", {
     id: text("id").primaryKey(),
     identifier: text("identifier").notNull(),
     value: text("value").notNull(),
-    expiresAt: integer("expiresAt", { mode: "timestamp" }).notNull(),
-    createdAt: integer("createdAt", { mode: "timestamp" }),
-    updatedAt: integer("updatedAt", { mode: "timestamp" }),
+    expiresAt: timestamp("expiresAt").notNull(),
+    createdAt: timestamp("createdAt"),
+    updatedAt: timestamp("updatedAt"),
 });
 
-export const userConfig = sqliteTable("user_config", {
+export const userConfig = pgTable("user_config", {
     id: text("id").primaryKey(),
     userId: text("userId")
         .notNull()
@@ -59,17 +59,17 @@ export const userConfig = sqliteTable("user_config", {
         .references(() => user.id, { onDelete: "cascade" }),
     spotifyAccessToken: text("spotifyAccessToken"),
     spotifyRefreshToken: text("spotifyRefreshToken"),
-    spotifyTokenExpiresAt: integer("spotifyTokenExpiresAt", { mode: "timestamp" }),
-    twitchEnabled: integer("twitchEnabled", { mode: "boolean" }).default(false),
-    twitchAutoAnnounce: integer("twitchAutoAnnounce", { mode: "boolean" }).default(false),
-    twitchEnableSongCommand: integer("twitchEnableSongCommand", { mode: "boolean" }).default(true),
-    twitchEnableQueueCommand: integer("twitchEnableQueueCommand", { mode: "boolean" }).default(true),
-    twitchEnableSrCommand: integer("twitchEnableSrCommand", { mode: "boolean" }).default(true),
+    spotifyTokenExpiresAt: timestamp("spotifyTokenExpiresAt"),
+    twitchEnabled: boolean("twitchEnabled").default(false),
+    twitchAutoAnnounce: boolean("twitchAutoAnnounce").default(false),
+    twitchEnableSongCommand: boolean("twitchEnableSongCommand").default(true),
+    twitchEnableQueueCommand: boolean("twitchEnableQueueCommand").default(true),
+    twitchEnableSrCommand: boolean("twitchEnableSrCommand").default(true),
     overlayStyle: text("overlayStyle").default("default"),
     overlayTheme: text("overlayTheme").default("default"),
     overlayPosition: text("overlayPosition").default("bottom-right"),
-    autoHide: integer("autoHide", { mode: "boolean" }).default(false),
-    showTimestamp: integer("showTimestamp", { mode: "boolean" }).default(false),
-    createdAt: integer("createdAt", { mode: "timestamp" }).notNull(),
-    updatedAt: integer("updatedAt", { mode: "timestamp" }).notNull(),
+    autoHide: boolean("autoHide").default(false),
+    showTimestamp: boolean("showTimestamp").default(false),
+    createdAt: timestamp("createdAt").notNull(),
+    updatedAt: timestamp("updatedAt").notNull(),
 });
