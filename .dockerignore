@@ -14,4 +14,3 @@ LICENSE
 .prettierignore
 .eslintrc*
 .releaserc*
-tsconfig*.json
