@@ -4,4 +4,4 @@ export const authClient = createAuthClient();
 
 export const { signIn, signUp, signOut, useSession } = authClient;
 
-export const signInWithTwitch = () => signIn.social({ provider: "twitch" });
+export const signInWithTwitch = () => signIn.social({ provider: "twitch", callbackURL: "/dashboard" });

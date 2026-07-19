@@ -109,11 +109,12 @@ export default function DashboardClient({ user }: DashboardClientProps) {
         toast.success("Twitch settings saved");
     };
 
-    const handleConnectSpotify = () => {
+    const handleConnectSpotify = async () => {
         setSpotifyConnecting(true);
+        const { SPOTIFY_CLIENT_ID } = await fetch("/api/env").then(res => res.json());
         const redirectUri = `${window.location.origin}/connect/spotify/callback`;
         const params = new URLSearchParams({
-            client_id: "51c964c881e14d46ab825a5978079831",
+            client_id: SPOTIFY_CLIENT_ID,
             response_type: "code",
             redirect_uri: redirectUri,
             scope: "user-read-currently-playing user-read-playback-state user-modify-playback-state",
