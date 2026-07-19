@@ -44,10 +44,9 @@ export default function SpotifyOverlayMiddle({
             "spotify_now_playing",
             null
         );
-    const [token, setToken] = useLocalStorage("spotify_access_token", serverConfig?.spotify?.accessToken);
-    const [refreshToken, setRefreshToken] = useLocalStorage(
-        "spotify_refresh_token",
-        serverConfig?.spotify?.refreshToken
+    const [token, setToken] = useState(serverConfig?.spotify?.accessToken || "");
+    const [refreshToken, setRefreshToken] = useState(
+        serverConfig?.spotify?.refreshToken || ""
     );
     const [queue, setQueue] = useLocalStorageJSON<QueueItems[] | null>(
         "spotify_queue",
@@ -75,9 +74,6 @@ export default function SpotifyOverlayMiddle({
         "background",
         parseAsString.withDefault("")
     );
-
-    const effectiveToken = serverConfig?.spotify?.accessToken || token;
-    const effectiveRefreshToken = serverConfig?.spotify?.refreshToken || refreshToken;
     const overlayTokenRef = useRef<string | null>(serverConfig?.user?.overlayToken || null);
 
     useEffect(() => {
@@ -115,14 +111,14 @@ export default function SpotifyOverlayMiddle({
         });
     }
     useEffect(() => {
-        if (!effectiveToken) {
+        if (!token) {
             setNoToken(true);
             return;
         }
         fetchNowPlaying();
         const interval = setInterval(fetchNowPlaying, 5_000);
         return () => clearInterval(interval);
-    }, [effectiveToken, nowPlayingSong?.id, effectiveRefreshToken]);
+    }, [token, nowPlayingSong?.id, refreshToken]);
 
     useEffect(() => {
         if (nowPlaying) {
@@ -173,13 +169,13 @@ export default function SpotifyOverlayMiddle({
     };
 
     const getRefreshToken = async () => {
-        if (!effectiveRefreshToken) return;
+        if (!refreshToken) return;
 
         const url = "/connect/spotify/refresh";
         const payload = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refresh_token: effectiveRefreshToken }),
+            body: JSON.stringify({ refresh_token: refreshToken }),
         };
 
         try {
@@ -188,7 +184,7 @@ export default function SpotifyOverlayMiddle({
 
             if (data.access_token) {
                 const newAccessToken = data.access_token;
-                const newRefreshToken = data.refresh_token || effectiveRefreshToken;
+                const newRefreshToken = data.refresh_token || refreshToken;
                 const expiresIn = data.expires_in || 3600;
                 const expiresAt = Date.now() + expiresIn * 1000;
 
@@ -221,12 +217,12 @@ export default function SpotifyOverlayMiddle({
     };
 
     const fetchNowPlaying = async () => {
-        if (!effectiveToken) return;
+        if (!token) return;
         try {
             const response = await fetch(
                 "https://api.spotify.com/v1/me/player/currently-playing",
                 {
-                    headers: { Authorization: `Bearer ${effectiveToken}` },
+                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
             if (response.status == 200) {
@@ -237,6 +233,7 @@ export default function SpotifyOverlayMiddle({
                 setNowPlaying(data);
             } else if (response.status == 401) {
                 const data = await response.json();
+                getRefreshToken();
                 if (data?.error?.message === "The access token expired") {
                     getRefreshToken();
                 }
@@ -249,12 +246,12 @@ export default function SpotifyOverlayMiddle({
     };
 
     const fetchQueue = async () => {
-        if (!effectiveToken) return;
+        if (!token) return;
         try {
             const response = await fetch(
                 "https://api.spotify.com/v1/me/player/queue",
                 {
-                    headers: { Authorization: `Bearer ${effectiveToken}` },
+                    headers: { Authorization: `Bearer ${token}` },
                 }
             );
             if (response.status == 200) {
