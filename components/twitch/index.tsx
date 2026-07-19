@@ -1,30 +1,37 @@
 "use client";
 import {
-    fetchLocalStorage,
     fetchLocalStorageJSON,
     useLocalStorage,
 } from "@/hooks/useLocalStorage";
 import { LocalStorageNowPlaying } from "@/types";
-import { parseAsBoolean, useQueryState } from "nuqs";
 import { useEffect, useRef, useState } from "react";
 import tmi from "tmi.js";
-
-export default function TwitchBotChat() {
-    const [token, setToken] = useLocalStorage("twitch_access_token", null);
-    const [spotifyToken] = useLocalStorage("spotify_access_token", null);
+interface TwitchBotChatProps {
+    twitchToken: string | null;
+    twitchRefreshToken: string | null;
+    twitchUsername: string;
+    spotifyToken: string | null;
+    autoAnnounce: boolean;
+    enableSongCommand: boolean;
+    enableQueueCommand: boolean;
+    enableSrCommand: boolean;
+    overlayToken: string | null;
+}
+export default function TwitchBotChat({
+    twitchToken,
+    twitchRefreshToken,
+    twitchUsername,
+    spotifyToken,
+    autoAnnounce,
+    enableSongCommand,
+    enableQueueCommand,
+    enableSrCommand,
+    overlayToken,
+}: TwitchBotChatProps) {
+    const [token, setToken] = useLocalStorage("twitch_access_token", twitchToken);
     const [refreshToken, setRefreshToken] = useLocalStorage(
         "twitch_refresh_token",
-        null
-    );
-
-    const [songRequest] = useQueryState(
-        "sr",
-        parseAsBoolean.withDefault(false)
-    );
-
-    const [autoAnnounce] = useQueryState(
-        "autoAnnounce",
-        parseAsBoolean.withDefault(false)
+        twitchRefreshToken
     );
 
     const client = useRef<tmi.Client | null>(null);
@@ -33,7 +40,7 @@ export default function TwitchBotChat() {
     const lastAnnouncedSongId = useRef<string | null>(null);
 
     useEffect(() => {
-        const username = fetchLocalStorage("twitch_username");
+        const username = twitchUsername
         if (!username || !token) {
             return;
         }
@@ -101,6 +108,7 @@ export default function TwitchBotChat() {
                             break;
 
                         case "!song":
+                            if (!enableSongCommand) return;
                             const nowPlayingSong =
                                 fetchLocalStorageJSON<LocalStorageNowPlaying | null>(
                                     "spotify_now_playing",
@@ -117,16 +125,17 @@ export default function TwitchBotChat() {
 
                             const songMessage = nowPlayingSong.playing
                                 ? `🎵 Now Playing: ${nowPlayingSong.name} by ${nowPlayingSong.artists.join(
-                                      ", "
-                                  )} | 🔗 ${nowPlayingSong.url}`
+                                    ", "
+                                )} | 🔗 ${nowPlayingSong.url}`
                                 : `⏸ Last Played: ${nowPlayingSong.name} by ${nowPlayingSong.artists.join(
-                                      ", "
-                                  )} | 🔗 ${nowPlayingSong.url}`;
+                                    ", "
+                                )} | 🔗 ${nowPlayingSong.url}`;
 
                             client.current?.say(channel, songMessage);
                             break;
 
                         case "!queue":
+                            if (!enableQueueCommand) return;
                             if (!spotifyToken) {
                                 client.current?.say(
                                     channel,
@@ -160,7 +169,7 @@ export default function TwitchBotChat() {
                             break;
 
                         case "!sr":
-                            if (!songRequest) return;
+                            if (!enableSrCommand) return;
 
                             if (!spotifyToken) {
                                 client.current?.say(
@@ -233,7 +242,7 @@ export default function TwitchBotChat() {
 
             isListenerAttached.current = true;
         }
-    }, [isConnected, token]);
+    }, [isConnected, token, enableQueueCommand, enableSongCommand, enableSrCommand]);
 
     useEffect(() => {
         if (!autoAnnounce) return;
@@ -258,7 +267,7 @@ export default function TwitchBotChat() {
                     ", "
                 )} | 🔗 ${nowPlaying.url}`;
 
-                const username = fetchLocalStorage("twitch_username");
+                const username = twitchUsername
                 if (username) {
                     client.current?.say(`#${username}`, message);
                 }
@@ -266,7 +275,7 @@ export default function TwitchBotChat() {
         }, 5000);
 
         return () => clearInterval(interval);
-    }, [autoAnnounce, isConnected]);
+    }, [autoAnnounce, isConnected, twitchUsername]);
 
     const refreshTwitchToken = async () => {
         if (!refreshToken) return;
@@ -285,6 +294,16 @@ export default function TwitchBotChat() {
             if (data.refresh_token) {
                 setRefreshToken(data.refresh_token);
             }
+            fetch(`/api/overlay/${overlayToken}/twitch-tokens`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    access_token: data.access_token,
+                    refresh_token: data.refresh_token,
+                }),
+            }).catch((err) =>
+                console.error("Failed to sync tokens to server:", err)
+            );
         }
     };
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { parseAsBoolean, parseAsString, useQueryState } from "nuqs";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
@@ -18,12 +18,22 @@ import SpotifyOverlayAI from "./overlays/Ai";
 import { themes } from "./overlays/theme";
 import { positionClasses } from "./overlays/positions";
 
+interface ServerConfig {
+    user: { id: string; overlayToken: string | null };
+    config: any;
+    spotify: {
+        accessToken: string | null;
+        refreshToken: string | null;
+        tokenExpiresAt: number | null;
+    } | null;
+}
+
 export default function SpotifyOverlayMiddle({
-    firstLoadToken,
+    serverConfig,
     _position,
     mockData,
 }: {
-    firstLoadToken?: string;
+    serverConfig?: ServerConfig | null;
     _position?: string;
     mockData?: { nowPlaying: NowPlaying; queue?: QueueItems[] | null };
 }) {
@@ -34,10 +44,10 @@ export default function SpotifyOverlayMiddle({
             "spotify_now_playing",
             null
         );
-    const [token, setToken] = useLocalStorage("spotify_access_token", null);
+    const [token, setToken] = useLocalStorage("spotify_access_token", serverConfig?.spotify?.accessToken);
     const [refreshToken, setRefreshToken] = useLocalStorage(
         "spotify_refresh_token",
-        null
+        serverConfig?.spotify?.refreshToken
     );
     const [queue, setQueue] = useLocalStorageJSON<QueueItems[] | null>(
         "spotify_queue",
@@ -46,25 +56,38 @@ export default function SpotifyOverlayMiddle({
     const [nowPlaying, setNowPlaying] = useState<NowPlaying | null>(null);
     const [showTimestamp] = useQueryState(
         "timestamp",
-        parseAsBoolean.withDefault(false)
+        parseAsBoolean.withDefault(serverConfig?.config?.showTimestamp ?? false)
     );
-    const [style] = useQueryState<any>("style", parseAsString.withDefault(""));
+    const [style] = useQueryState<any>("style", parseAsString.withDefault(serverConfig?.config?.style ?? ""));
     const [theme] = useQueryState<any>(
         "theme",
-        parseAsString.withDefault("default")
+        parseAsString.withDefault(serverConfig?.config?.theme ?? "default")
     );
     const [autoHide] = useQueryState<any>(
         "autoHide",
-        parseAsBoolean.withDefault(false)
+        parseAsBoolean.withDefault(serverConfig?.config?.autoHide ?? false)
     );
     const [position] = useQueryState<any>(
         "position",
-        parseAsString.withDefault("bottom-right")
+        parseAsString.withDefault(serverConfig?.config?.position ?? "bottom-right")
     );
     const [background] = useQueryState<any>(
         "background",
         parseAsString.withDefault("")
     );
+
+    const effectiveToken = serverConfig?.spotify?.accessToken || token;
+    const effectiveRefreshToken = serverConfig?.spotify?.refreshToken || refreshToken;
+    const overlayTokenRef = useRef<string | null>(serverConfig?.user?.overlayToken || null);
+
+    useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const ot = params.get("overlayToken");
+        if (ot) {
+            overlayTokenRef.current = ot;
+        }
+    }, []);
+
     if (mockData?.nowPlaying) {
         const { nowPlaying: np, queue: mockQueue } = mockData;
 
@@ -92,14 +115,14 @@ export default function SpotifyOverlayMiddle({
         });
     }
     useEffect(() => {
-        if (!token) {
+        if (!effectiveToken) {
             setNoToken(true);
             return;
         }
         fetchNowPlaying();
         const interval = setInterval(fetchNowPlaying, 5_000);
         return () => clearInterval(interval);
-    }, [token, nowPlayingSong?.id, refreshToken]);
+    }, [effectiveToken, nowPlayingSong?.id, effectiveRefreshToken]);
 
     useEffect(() => {
         if (nowPlaying) {
@@ -149,25 +172,14 @@ export default function SpotifyOverlayMiddle({
         saveCodeWithValue(inputCode);
     };
 
-    useEffect(() => {
-        if (!firstLoadToken) return;
-        if (token) return;
-
-        saveCodeWithValue(firstLoadToken);
-
-        const url = new URL(window.location.href);
-        url.searchParams.delete("token");
-        window.history.replaceState({}, "", url.toString());
-    }, [firstLoadToken]);
-
     const getRefreshToken = async () => {
-        if (!refreshToken) return;
+        if (!effectiveRefreshToken) return;
 
         const url = "/connect/spotify/refresh";
         const payload = {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ refresh_token: refreshToken }),
+            body: JSON.stringify({ refresh_token: effectiveRefreshToken }),
         };
 
         try {
@@ -175,10 +187,30 @@ export default function SpotifyOverlayMiddle({
             const data = await response.json();
 
             if (data.access_token) {
+                const newAccessToken = data.access_token;
+                const newRefreshToken = data.refresh_token || effectiveRefreshToken;
+                const expiresIn = data.expires_in || 3600;
+                const expiresAt = Date.now() + expiresIn * 1000;
+
                 if (data.refresh_token) {
                     setRefreshToken(data.refresh_token);
                 }
                 setToken(data.access_token);
+
+                const ot = overlayTokenRef.current;
+                if (ot) {
+                    fetch(`/api/overlay/${ot}/tokens`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            access_token: newAccessToken,
+                            refresh_token: newRefreshToken,
+                            expires_at: expiresAt,
+                        }),
+                    }).catch((err) =>
+                        console.error("Failed to sync tokens to server:", err)
+                    );
+                }
             }
             if (response.status === 400) {
                 setNoToken(true);
@@ -189,17 +221,17 @@ export default function SpotifyOverlayMiddle({
     };
 
     const fetchNowPlaying = async () => {
-        if (!token) return;
+        if (!effectiveToken) return;
         try {
             const response = await fetch(
                 "https://api.spotify.com/v1/me/player/currently-playing",
                 {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${effectiveToken}` },
                 }
             );
             if (response.status == 200) {
                 const data = await response.json();
-                if (nowPlayingSong?.id !== data.item.id) {
+                if (nowPlayingSong?.id !== data.item?.id) {
                     fetchQueue();
                 }
                 setNowPlaying(data);
@@ -217,12 +249,12 @@ export default function SpotifyOverlayMiddle({
     };
 
     const fetchQueue = async () => {
-        if (!token) return;
+        if (!effectiveToken) return;
         try {
             const response = await fetch(
                 "https://api.spotify.com/v1/me/player/queue",
                 {
-                    headers: { Authorization: `Bearer ${token}` },
+                    headers: { Authorization: `Bearer ${effectiveToken}` },
                 }
             );
             if (response.status == 200) {
@@ -242,7 +274,7 @@ export default function SpotifyOverlayMiddle({
         return `${minutes}:${seconds.toString().padStart(2, "0")}`;
     };
 
-    if (noToken && !firstLoadToken) {
+    if (noToken && !serverConfig) {
         return (
             <div className="flex flex-col items-center gap-2 rounded-lg bg-black/70 p-4">
                 <p className="text-white">Enter your Spotify code:</p>

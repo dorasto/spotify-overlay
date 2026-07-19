@@ -92,8 +92,6 @@ export default function SpotifyOverlayTestBench({
                 <SpotifyOverlayMiddle
                     key={key}
                     _position={key as keyof typeof positionClasses}
-                    firstLoadToken={token as string}
-                    // ⬇ Feed fetched data to each overlay (one API source)
                     mockData={{
                         nowPlaying: newNowPlaying,
                         queue: queue,
