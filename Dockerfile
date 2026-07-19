@@ -6,8 +6,7 @@ FROM base AS deps
 RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-lock.yaml ./
 RUN npm install -g pnpm
-ENV npm_config_build_from_source=true
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --no-frozen-lockfile --config.onlyBuiltDependencies='["better-sqlite3", "esbuild", "sharp"]'
 
 FROM base AS builder
 WORKDIR /app
