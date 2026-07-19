@@ -4,15 +4,15 @@ WORKDIR /app
 
 FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-RUN npm install -g pnpm
-RUN pnpm install --no-frozen-lockfile
+RUN npm install -g pnpm@9
+RUN pnpm install --no-frozen-lockfile --ignore-scripts
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 ENV NEXT_TELEMETRY_DISABLED=1
-RUN npm install -g pnpm
+RUN npm install -g pnpm@9
 RUN pnpm run build
 
 FROM base AS runner
