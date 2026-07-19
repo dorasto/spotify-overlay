@@ -1,83 +1,61 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function SpotifyCallback({
     searchParams,
-    rootDomain,
 }: {
-    rootDomain: string;
     searchParams: { code?: string };
 }) {
-    const [copied, setCopied] = useState(false);
+    const router = useRouter();
+    const [processing, setProcessing] = useState(true);
 
-    const handleCopy = () => {
-        if (searchParams.code) {
-            const overlayUrl = `${rootDomain}/overlay?token=${searchParams.code}`;
-            navigator.clipboard.writeText(overlayUrl);
-            setCopied(true);
-            setTimeout(() => {
-                setCopied(false);
-            }, 5000);
+    useEffect(() => {
+        if (!searchParams.code) {
+            toast.error("No authorization code received");
+            router.push("/dashboard");
+            return;
         }
-    };
+
+        const exchangeCode = async () => {
+            try {
+                const res = await fetch("/api/spotify/callback", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ code: searchParams.code }),
+                });
+
+                if (res.ok) {
+                    toast.success("Spotify connected successfully");
+                } else {
+                    const data = await res.json();
+                    toast.error(data.error || "Failed to connect Spotify");
+                }
+            } catch (error) {
+                console.error("Error exchanging code:", error);
+                toast.error("Failed to connect Spotify");
+            } finally {
+                setProcessing(false);
+                router.push("/dashboard?tab=spotify");
+            }
+        };
+
+        exchangeCode();
+    }, [searchParams.code, router]);
 
     return (
-        <main className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 p-6 text-white">
-            <div className="w-full max-w-md rounded-xl border border-zinc-700 bg-zinc-800 p-6 text-center shadow-lg">
-                <h1 className="mb-3 text-2xl font-bold">
-                    🎥 OBS Browser Source Setup
-                </h1>
-                <p className="mb-4 text-sm text-zinc-300">
-                    Follow these steps to connect Spotify to your OBS overlay:
-                </p>
-
-                <ol className="mb-5 list-inside list-decimal space-y-2 text-left text-sm text-zinc-300">
-                    <li>
-                        In OBS, add (or select) a{" "}
-                        <strong className="text-white">Browser Source</strong>{" "}
-                        in your scene.
-                    </li>
-                    <li>
-                        Click the{" "}
-                        <strong className="text-white">Copy Overlay URL</strong>{" "}
-                        button below.
-                    </li>
-                    <li>
-                        Paste the copied URL into the{" "}
-                        <strong className="text-white">URL field</strong> of the
-                        Browser Source settings.
-                    </li>
-                    <li>
-                        Click{" "}
-                        <strong className="text-white">OK</strong> to apply the
-                        changes.
-                    </li>
-                    <li>
-                        Make sure the Browser Source is{" "}
-                        <strong className="text-white">visible</strong> in your
-                        scene.
-                    </li>
-                    <li>
-                        The overlay will automatically connect to Spotify
-                    </li>
-                </ol>
-
-                <button
-                    className={`w-full rounded-lg px-4 py-2 text-white transition ${
-                        copied
-                            ? "cursor-default bg-green-500"
-                            : "bg-blue-500 hover:bg-blue-600"
-                    }`}
-                    onClick={handleCopy}
-                    disabled={copied}
-                >
-                    {copied ? "✅ URL Copied!" : "Copy Overlay URL"}
-                </button>
-
-                {copied && (
-                    <p className="mt-2 text-sm text-green-400">
-                        Paste this URL into your OBS Browser Source settings.
+        <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 text-white">
+            <div className="w-full max-w-md rounded-xl border border-gray-700 bg-gray-800 p-6 text-center shadow-lg">
+                <h1 className="mb-3 text-2xl font-bold">Connecting Spotify...</h1>
+                {processing ? (
+                    <p className="text-sm text-gray-400">
+                        Please wait while we connect your Spotify account.
+                    </p>
+                ) : (
+                    <p className="text-sm text-gray-400">
+                        Redirecting to dashboard...
                     </p>
                 )}
             </div>

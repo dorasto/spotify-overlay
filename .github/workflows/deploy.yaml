@@ -27,12 +27,15 @@ jobs:
             - name: Setup Node.js
               uses: useblacksmith/setup-node@v5.0.4
               with:
-                  node-version: "20"
+                  node-version: "22"
 
             - name: Setup pnpm
               uses: pnpm/action-setup@v4
               with:
                   version: 10 # Use latest compatible version with your project
+
+            - name: Install OS build tools
+              run: sudo apt-get update && sudo apt-get install -y build-essential python3
 
             - name: Install dependencies
               run: pnpm install --frozen-lockfile
@@ -81,8 +84,6 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  ref: main
 
             - name: Login to GitHub Container Registry
 
@@ -113,8 +114,6 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  ref: main
 
             - name: Login to GitHub Container Registry
               run: echo ${{ secrets.GHCR_LOGIN }} | docker login ghcr.io -u doras-to-admin --password-stdin

@@ -1,0 +1,16 @@
+node_modules
+.next
+.git
+.gitignore
+.dockerignore
+*.md
+CHANGELOG.md
+LICENSE
+.env
+.env.*
+.vscode
+.github
+.prettierrc*
+.prettierignore
+.eslintrc*
+.releaserc*

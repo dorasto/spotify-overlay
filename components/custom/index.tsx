@@ -1,10 +1,9 @@
 "use client";
 import ShowcaseSheet from "@/components/ShowcaseSheet";
 import SpotifyOverlayMiddle from "@/components/spotify-overlay";
-import TwitchBotChat from "@/components/twitch";
 import Zoom from "@/components/zoom";
 import { useLocalStorageJSON } from "@/hooks/useLocalStorage";
-import { useEffect, useState } from "react"; // Import useEffect and useState
+import { useEffect, useState } from "react";
 import { parseAsBoolean, useQueryState } from "nuqs";
 import { EditorCanvas } from "../editor/canvas";
 import { SettingsSheet } from "../Settings";
@@ -14,25 +13,20 @@ interface MyItem {
     scale: number;
     zoomLevel: number;
 }
-export default function CustomOverlayEditor({
-        firstLoadToken,
-
-}:{
-        firstLoadToken?: string;
-}) {
+export default function CustomOverlayEditor() {
     const [canvasWidthAndHeight, setCanvasWidthAndHeight] = useState({
         width: 1920,
         height: 1080,
     });
     const [edit] = useQueryState("edit", parseAsBoolean.withDefault(false));
-    const [isClient, setIsClient] = useState(false); // Track if we're on the client
+    const [isClient, setIsClient] = useState(false);
     useEffect(() => {
-        setIsClient(true); // Set to true when the component mounts
+        setIsClient(true);
         setCanvasWidthAndHeight({
             width: window.innerWidth,
             height: window.innerHeight,
         });
-    }, []); // Empty dependency array: runs only once on moun
+    }, []);
     const [settings, setSettings] = useLocalStorageJSON<MyItem>(
         "music_overlay_custom_position",
         {
@@ -45,7 +39,6 @@ export default function CustomOverlayEditor({
 
     const style =
         (isClient && {
-            //Conditionally apply styles
             top: settings.position.y,
             left: settings.position.x,
             width: settings.size.width,
@@ -59,7 +52,6 @@ export default function CustomOverlayEditor({
             <Zoom />
             <SettingsSheet />
             <ShowcaseSheet />
-            <TwitchBotChat />
             {isClient && settings && edit ? (
                 <EditorCanvas
                     position={settings.position}
@@ -83,7 +75,7 @@ export default function CustomOverlayEditor({
                 />
             ) : (
                 <div className="absolute" style={style}>
-                    <SpotifyOverlayMiddle firstLoadToken={firstLoadToken}/>
+                    <SpotifyOverlayMiddle />
                 </div>
             )}
         </div>

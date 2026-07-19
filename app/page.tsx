@@ -1,13 +1,11 @@
 import ThemeShowcase from "@/components/showcase";
-import SpotifyLogin from "@/components/spotify-login";
-import TwitchConnect from "@/components/twitch-connect";
+import TwitchLogin from "@/components/twitch-login";
 
 export default function Page() {
     return (
         <main className="bg-background">
             <div className="flex flex-row items-center justify-center gap-4">
-                <SpotifyLogin />
-                <TwitchConnect />
+                <TwitchLogin />
             </div>
             <ThemeShowcase />
         </main>
