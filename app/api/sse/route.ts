@@ -21,9 +21,22 @@ export async function GET(request: NextRequest) {
             ctrl.enqueue(
                 encoder.encode(`data: ${JSON.stringify({ type: "connected", token })}\n\n`)
             );
+            
+            const pingInterval = setInterval(() => {
+                try {
+                    ctrl.enqueue(encoder.encode(`: ping\n\n`));
+                } catch {
+                    clearInterval(pingInterval);
+                }
+            }, 15000);
+            
+            (ctrl as any).pingInterval = pingInterval;
         },
         cancel() {
             sseBroadcaster.unsubscribe(token, controller);
+            if ((controller as any).pingInterval) {
+                clearInterval((controller as any).pingInterval);
+            }
         },
     });
 
