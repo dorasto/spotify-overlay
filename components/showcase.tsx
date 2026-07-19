@@ -267,7 +267,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsList>
                             <TabsContent value="standard">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">
@@ -291,7 +291,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="minimal">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">
@@ -313,7 +313,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="animated">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">
@@ -337,7 +337,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="fade">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">
@@ -358,7 +358,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="dynamic">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">
@@ -379,7 +379,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="media-stack">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">
@@ -400,7 +400,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                             </TabsContent>
                             <TabsContent value="ai">
                                 <span className="my-2 block text-white">
-                                    {rootDomain.length === 0 ? (
+                                    {rootDomain?.length === 0 ? (
                                         <Skeleton className="h-6 w-full" />
                                     ) : (
                                         <code className="rounded bg-muted px-2 py-1">

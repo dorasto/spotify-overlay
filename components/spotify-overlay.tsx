@@ -10,7 +10,7 @@ import AnimatedOverlay from "./overlays/Animated";
 import SpotifyOverlayFade from "./overlays/Fade";
 import { LocalStorageNowPlaying, NowPlaying, QueueItems } from "@/types";
 import QueueOverlay from "./overlays/queue";
-import { useLocalStorageJSON, useLocalStorage } from "@/hooks/useLocalStorage";
+import { useLocalStorageJSON } from "@/hooks/useLocalStorage";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
 import { toast } from "sonner";
 import SpotifyOverlayMediaStack from "./overlays/MediaStack";
@@ -122,7 +122,7 @@ export default function SpotifyOverlayMiddle({
 
     useEffect(() => {
         if (nowPlaying) {
-            const trackName = newNowPlaying.item.name;
+            const trackName = newNowPlaying.item?.name;
             const trackUrl = newNowPlaying.item.external_urls.spotify;
             setNowPlayingSong({
                 playing: nowPlaying.is_playing,
@@ -134,7 +134,7 @@ export default function SpotifyOverlayMiddle({
         } else {
             setNowPlayingSong(null);
         }
-    }, [nowPlaying?.item.name, nowPlaying?.is_playing]);
+    }, [nowPlaying?.item?.name, nowPlaying?.is_playing]);
 
     const saveCodeWithValue = async (code: string) => {
         try {
