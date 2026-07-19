@@ -81,8 +81,6 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  ref: main
 
             - name: Login to GitHub Container Registry
 
@@ -113,8 +111,6 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
-              with:
-                  ref: main
 
             - name: Login to GitHub Container Registry
               run: echo ${{ secrets.GHCR_LOGIN }} | docker login ghcr.io -u doras-to-admin --password-stdin
