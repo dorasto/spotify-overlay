@@ -4,9 +4,9 @@ WORKDIR /app
 
 FROM base AS deps
 RUN apk add --no-cache python3 make g++
-COPY package.json pnpm-lock.yaml ./
+COPY package.json pnpm-lock.yaml .npmrc ./
 RUN npm install -g pnpm
-RUN pnpm install --no-frozen-lockfile --config.onlyBuiltDependencies='["better-sqlite3", "esbuild", "sharp"]'
+RUN pnpm install --no-frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
