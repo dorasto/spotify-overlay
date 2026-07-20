@@ -279,7 +279,7 @@ export default function AdminClient({ user }: AdminClientProps) {
                                             </TableCell>
                                             <TableCell>
                                                 {(() => {
-                                                    const themeName = u.overlayTheme ?? "default";
+                                                    const themeName = (u.overlayTheme ?? "default") as keyof typeof themes;
                                                     const t = themes[themeName] ?? themes["default"];
                                                     return (
                                                         <div className="flex items-center gap-3">
