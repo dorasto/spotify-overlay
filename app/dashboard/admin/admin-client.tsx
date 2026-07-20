@@ -25,6 +25,9 @@ import {
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
+import { Music } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { themes } from "@/components/overlays/theme";
 
 interface AdminUser {
     id: string;
@@ -214,13 +217,14 @@ export default function AdminClient({ user }: AdminClientProps) {
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider">Spotify</TableHead>
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider">Twitch</TableHead>
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider">Overlay</TableHead>
+                                    <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider">Theme</TableHead>
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider text-right">Joined</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {filteredUsers.length === 0 ? (
                                     <TableRow className="border-white/[0.06]">
-                                        <TableCell colSpan={6} className="text-center text-gray-500 py-8">
+                                        <TableCell colSpan={7} className="text-center text-gray-500 py-8">
                                             No users found
                                         </TableCell>
                                     </TableRow>
@@ -272,6 +276,30 @@ export default function AdminClient({ user }: AdminClientProps) {
                                                 <span className="text-sm text-gray-400">
                                                     {u.overlayStyle ?? "default"}
                                                 </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                {(() => {
+                                                    const themeName = u.overlayTheme ?? "default";
+                                                    const t = themes[themeName] ?? themes["default"];
+                                                    return (
+                                                        <div className="flex items-center gap-3">
+                                                            <div className={cn("w-40 rounded-md border-0 p-2 shadow-md", t.card)}>
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className={cn("h-8 w-8 flex-shrink-0 rounded", t.avatarFallback)}>
+                                                                        <div className="flex h-full w-full items-center justify-center">
+                                                                            <Music className="h-4 w-4 text-white/70" />
+                                                                        </div>
+                                                                    </div>
+                                                                    <div className="flex min-w-0 flex-1 flex-col">
+                                                                        <div className={cn("text-xs font-bold truncate", t.text)}>Song Name</div>
+                                                                        <div className={cn("text-[10px] truncate", t.text)}>Artist</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <span className="text-xs text-gray-500 whitespace-nowrap">{themeName}</span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <span className="text-sm text-gray-500 tabular-nums">

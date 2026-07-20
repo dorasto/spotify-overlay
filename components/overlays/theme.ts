@@ -125,10 +125,10 @@ export const themes = {
         text: "text-white",
         timestampText: "text-teal-200",
     },
-    "cyberpunk-neon": {
+    "neon-cyberpunk": {
         author: "AI",
         card: "bg-black shadow-[0_0_20px_rgba(0,255,255,0.8)]",
-        avatarBorder: "border-2 border-cyan-400 rounded",
+        avatarBorder: "border-2 border-cyan-400",
         avatarFallback: "bg-cyan-800",
         badge: "bg-cyan-300",
         text: "text-cyan-300",
@@ -224,10 +224,10 @@ export const themes = {
         text: "text-indigo-300",
         timestampText: "text-purple-200",
     },
-    "holographic-neon": {
+    "neon-holographic": {
         author: "AI",
         card: "bg-gradient-to-r from-cyan-300 via-purple-400 to-pink-500 shadow-[0_0_15px_rgba(0,255,255,0.7)]",
-        avatarBorder: "border-2 border-cyan-500 rounded",
+        avatarBorder: "border-2 border-cyan-500",
         avatarFallback: "bg-cyan-700",
         badge: "bg-cyan-400",
         text: "text-white",
