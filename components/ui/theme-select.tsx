@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { Check, ChevronDown } from "lucide-react";
+import { Check, ChevronDown, Search } from "lucide-react";
 import { themes } from "@/components/overlays/theme";
 
 interface ThemeSelectProps {
@@ -82,9 +82,21 @@ const themeColors: Record<string, string> = {
 
 export function ThemeSelect({ value, onValueChange }: ThemeSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const [search, setSearch] = useState("");
 
-    const themeEntries = Object.entries(themes);
-    const selectedTheme = themeEntries.find(([key]) => key === value);
+    const themeEntries = useMemo(
+        () => Object.entries(themes).sort(([a], [b]) => a.localeCompare(b)),
+        []
+    );
+
+    const filteredEntries = useMemo(
+        () =>
+            themeEntries.filter(([name, theme]) => {
+                const q = search.toLowerCase();
+                return name.toLowerCase().includes(q) || theme.author.toLowerCase().includes(q);
+            }),
+        [themeEntries, search]
+    );
 
     return (
         <div className="relative">
@@ -102,14 +114,26 @@ export function ThemeSelect({ value, onValueChange }: ThemeSelectProps) {
 
             {isOpen && (
                 <div className="absolute z-50 mt-2 w-full rounded-lg border border-white/[0.08] bg-[#1a1d27] shadow-lg">
+                    <div className="flex items-center gap-2 border-b border-white/[0.08] px-3 py-2">
+                        <Search className="h-4 w-4 text-gray-400" />
+                        <input
+                            type="text"
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                            placeholder="Search themes..."
+                            className="w-full bg-transparent text-sm text-white placeholder:text-gray-500 focus:outline-none"
+                            autoFocus
+                        />
+                    </div>
                     <div className="max-h-[300px] overflow-y-auto p-1">
-                        {themeEntries.map(([themeName]) => (
+                        {filteredEntries.map(([themeName, theme]) => (
                             <button
                                 key={themeName}
                                 type="button"
                                 onClick={() => {
                                     onValueChange(themeName);
                                     setIsOpen(false);
+                                    setSearch("");
                                 }}
                                 className={cn(
                                     "flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm text-left hover:bg-white/[0.05]",
@@ -118,6 +142,7 @@ export function ThemeSelect({ value, onValueChange }: ThemeSelectProps) {
                             >
                                 <div className={cn("h-4 w-4 rounded", themeColors[themeName] || "bg-gray-500")} />
                                 <span className="flex-1">{themeName}</span>
+                                <span className="text-xs text-gray-500">{theme.author}</span>
                                 {value === themeName && <Check className="h-4 w-4 text-emerald-400" />}
                             </button>
                         ))}

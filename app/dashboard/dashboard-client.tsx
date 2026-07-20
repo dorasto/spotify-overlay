@@ -344,13 +344,16 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
                                     <Separator className="bg-white/[0.06]" />
 
                                     <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <Label className="text-gray-300 text-sm">Auto Hide</Label>
-                                                <p className="text-xs text-gray-500">Hide overlay when nothing is playing</p>
+
+                                        {overlayStyle === "animated" && (
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <Label className="text-gray-300 text-sm">Auto Hide</Label>
+                                                    <p className="text-xs text-gray-500">Hide overlay when nothing is playing</p>
+                                                </div>
+                                                <Switch checked={autoHide} onCheckedChange={setAutoHide} className="data-[state=checked]:bg-emerald-500" />
                                             </div>
-                                            <Switch checked={autoHide} onCheckedChange={setAutoHide} className="data-[state=checked]:bg-emerald-500" />
-                                        </div>
+                                        )}
 
                                         <div className="flex items-center justify-between">
                                             <div>

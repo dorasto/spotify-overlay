@@ -335,7 +335,7 @@ export const themes = {
     "neon-stream": {
         author: "AI",
         card: "bg-gradient-to-r from-purple-700 via-indigo-600 to-blue-500 shadow-[0_0_15px_rgba(138,43,226,0.7)]",
-        avatarBorder: "border-2 border-indigo-400 rounded",
+        avatarBorder: "border-2 border-indigo-400",
         avatarFallback: "bg-purple-900",
         badge: "bg-indigo-500",
         text: "text-white",
