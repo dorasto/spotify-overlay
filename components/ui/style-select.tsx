@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown } from "lucide-react";
 
@@ -38,11 +38,22 @@ const stylePreviews: Record<string, string> = {
 
 export function StyleSelect({ value, onValueChange }: StyleSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const selectedOption = styles.find((opt) => opt.value === value);
 
     return (
-        <div className="relative">
+        <div ref={ref} className="relative">
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}

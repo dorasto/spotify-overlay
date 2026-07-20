@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Check, ChevronDown, Search } from "lucide-react";
 import { themes } from "@/components/overlays/theme";
@@ -83,6 +83,17 @@ const themeColors: Record<string, string> = {
 export function ThemeSelect({ value, onValueChange }: ThemeSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [search, setSearch] = useState("");
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const themeEntries = useMemo(
         () => Object.entries(themes).sort(([a], [b]) => a.localeCompare(b)),
@@ -99,7 +110,7 @@ export function ThemeSelect({ value, onValueChange }: ThemeSelectProps) {
     );
 
     return (
-        <div className="relative">
+        <div ref={ref} className="relative">
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}

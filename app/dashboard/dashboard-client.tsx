@@ -207,6 +207,9 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
     const overlayUrl = config?.overlayToken
         ? `${window.location.origin}/overlay?overlayToken=${config.overlayToken}`
         : "";
+    const maskedOverlayUrl = config?.overlayToken
+        ? `${window.location.origin}/overlay?overlayToken=ovl_****`
+        : "";
 
     const isConnected = config?.spotify?.accessToken;
 
@@ -268,39 +271,34 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
                     <TabsContent value="overlay" className="space-y-6">
                         {/* URL Card */}
                         <Card className="bg-white/[0.03] border-white/[0.06]">
-                            <CardHeader>
-                                <CardTitle className="text-white text-base">Your Overlay URL</CardTitle>
-                                <CardDescription className="text-gray-500 text-sm">
-                                    Add this URL as a Browser Source in OBS to display your overlay
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                <div className="flex gap-2">
-                                    <Input
-                                        value={overlayUrl}
-                                        readOnly
-                                        className="flex-1 bg-black/30 border-white/[0.08] text-gray-300 font-mono text-sm rounded-lg focus-visible:ring-emerald-500/30"
-                                    />
-                                    <Button onClick={copyOverlayUrl} variant="outline" size="icon" className="bg-white/[0.05] border-white/[0.08] hover:bg-white/10">
+                            <CardContent className="flex items-center justify-between py-4">
+                                <div>
+                                    <CardTitle className="text-white text-sm font-medium">Your Overlay URL</CardTitle>
+                                    <CardDescription className="text-gray-500 text-xs mt-0.5">
+                                        Add this URL as a Browser Source in OBS
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Link href="/dashboard/custom">
+                                        <Button variant="outline" size="sm" className="bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] text-gray-300 text-xs">
+                                            <IconEye className="mr-1.5 h-3.5 w-3.5" />
+                                            Custom Editor
+                                        </Button>
+                                    </Link>
+                                    <Button onClick={copyOverlayUrl} size="sm" className="bg-emerald-500/15 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/25 text-xs">
                                         {copied ? (
-                                            <IconCheck className="h-4 w-4 text-emerald-400" />
+                                            <>
+                                                <IconCheck className="mr-1.5 h-3.5 w-3.5" />
+                                                Copied
+                                            </>
                                         ) : (
-                                            <IconCopy className="h-4 w-4 text-gray-400" />
+                                            <>
+                                                <IconCopy className="mr-1.5 h-3.5 w-3.5" />
+                                                Copy URL
+                                            </>
                                         )}
                                     </Button>
                                 </div>
-                                <div className="flex items-center gap-1.5">
-                                    <IconLink className="h-3.5 w-3.5 text-gray-600" />
-                                    <span className="text-xs text-gray-500">
-                                        Token: <code className="text-gray-400">{config?.overlayToken?.slice(0, 16)}...</code>
-                                    </span>
-                                </div>
-                                <Link href="/dashboard/custom">
-                                    <Button variant="outline" className="w-full bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] text-gray-300">
-                                        <IconEye className="mr-2 h-4 w-4" />
-                                        Open Custom Editor
-                                    </Button>
-                                </Link>
                             </CardContent>
                         </Card>
 

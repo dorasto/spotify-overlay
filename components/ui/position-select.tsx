@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "lucide-react";
 
@@ -23,11 +23,22 @@ const positions = [
 
 export function PositionSelect({ value, onValueChange }: PositionSelectProps) {
     const [isOpen, setIsOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (ref.current && !ref.current.contains(e.target as Node)) {
+                setIsOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
 
     const selectedPosition = positions.find((pos) => pos.value === value);
 
     return (
-        <div className="relative">
+        <div ref={ref} className="relative">
             <button
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
