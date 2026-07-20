@@ -1,3 +1,10 @@
+## [1.3.1](https://github.com/dorasto/spotify-overlay/compare/v1.3.0...v1.3.1) (2026-07-20)
+
+
+### Bug Fixes
+
+* health endpoint and refactor Twitch login ([ae73b27](https://github.com/dorasto/spotify-overlay/commit/ae73b2745c0017b2d77d0f108edd372e6467741f))
+
 # [1.3.0](https://github.com/dorasto/spotify-overlay/compare/v1.2.0...v1.3.0) (2025-07-16)
 
 
