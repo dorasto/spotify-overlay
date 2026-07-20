@@ -5,22 +5,19 @@ import SpotifyOverlay from "./overlays";
 import AnimatedOverlay from "./overlays/Animated";
 import MinimalBarOverlay from "./overlays/MinimalBar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";
-import { Label } from "./ui/label";
 import SpotifyOverlayFade from "./overlays/Fade";
 import SpotifyOverlayDynamic from "./overlays/Dynamic";
 import { Skeleton } from "./ui/skeleton";
-import { positionClasses } from "./overlays/positions";
 import SpotifyOverlayMediaStack from "./overlays/MediaStack";
 import SpotifyOverlayAI from "./overlays/Ai";
 
 export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
-    const [song, setSong] = useState<any>({
+    const [song] = useState<any>({
         is_playing: true,
         item: {
             album: {
-                images: [{ url: "/favicon.ico" }], // Placeholder image
+                images: [{ url: "/favicon.ico" }],
                 name: "Doras.to",
             },
             artists: [{ name: "Doras.to" }],
@@ -31,11 +28,7 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
         progress_ms: "1:00",
         raw_progress_ms: 120000,
     });
-    const [showTimestamp, setShowTimestamp] = useState(false); // Toggle state
-    const [position, setPosition] =
-        useState<keyof typeof positionClasses>("bottom-right");
     const [rootDomain, setRootDomain] = useState("");
-    const [globalViewMode, setGlobalViewMode] = useState<string | null>(null);
 
     useEffect(() => {
         fetch("/api/env")
@@ -45,169 +38,32 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
             })
             .catch((err) => {
                 console.error("Failed to fetch environment variables:", err);
-                setRootDomain(window.location.origin); // Fallback to current origin
+                setRootDomain(window.location.origin);
             });
     }, []);
 
-    // Apply global view mode change
-    const handleGlobalViewModeChange = (value: string) => {
-        if (value) {
-            setGlobalViewMode(value);
-        }
-    };
-
-    // Function to generate overlay URLs with runtime values
     const generateOverlayURL = (
         style: string,
         theme: string,
-        showTimestamp?: boolean
     ) => {
-        const base = rootDomain; // Use the state variable instead of process.env
+        const base = rootDomain;
         const params = new URLSearchParams();
 
         if (theme !== "default") params.set("theme", theme);
         if (style !== "default") params.set("style", style);
-        if (showTimestamp) params.set("timestamp", "true");
-        if (position !== "bottom-right") params.set("position", position);
 
         return `${base}/overlay${params.toString() ? `?${params.toString()}` : ""}`;
     };
 
     return (
-        <div className="p-6">
-            {/* Controls Row */}
-            <div className="mb-6 flex flex-col gap-2">
-                {/* Toggle Switch for Timestamp */}
-                <div className="flex w-fit flex-col">
-                    <Label>Timestamp</Label>
-                    <ToggleGroup
-                        type="single"
-                        className="rounded-md bg-muted p-1"
-                        value={showTimestamp ? "on" : "off"}
-                        onValueChange={(value) => {
-                            if (value === "on" || value === "off") {
-                                setShowTimestamp(value === "on");
-                            }
-                        }}
-                    >
-                        <ToggleGroupItem
-                            value="on"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            On
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="off"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Off
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                </div>
-                <div className="flex w-fit flex-col">
-                    <Label>Is Playing</Label>
-                    <ToggleGroup
-                        type="single"
-                        className="rounded-md bg-muted p-1"
-                        value={song.is_playing ? "on" : "off"}
-                        onValueChange={(value) => {
-                            setSong({
-                                ...song,
-                                is_playing: value === "on" ? true : false,
-                            });
-                        }}
-                    >
-                        <ToggleGroupItem
-                            value="on"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            On
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="off"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Off
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                </div>
-                <div className="flex w-fit flex-col">
-                    <Label>Position</Label>
-                    <ToggleGroup
-                        type="single"
-                        className="rounded-md bg-muted p-1"
-                        value={position || undefined}
-                        onValueChange={(value: any) => {
-                            setPosition(value);
-                        }}
-                    >
-                        {Object.keys(positionClasses).map((position) => (
-                            <ToggleGroupItem
-                                key={position}
-                                value={position}
-                                className="bg-transparent data-[state=on]:bg-background"
-                            >
-                                {position}
-                            </ToggleGroupItem>
-                        ))}
-                    </ToggleGroup>
-                </div>
-                {/* Toggle Group for View Mode */}
-                <div className="flex w-fit flex-col">
-                    <Label>Theme</Label>
-                    <ToggleGroup
-                        type="single"
-                        className="rounded-md bg-muted p-1"
-                        value={globalViewMode || undefined}
-                        onValueChange={handleGlobalViewModeChange}
-                    >
-                        <ToggleGroupItem
-                            value="standard"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Standard
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="minimal"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Bar
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="animated"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Animated
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="fade"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Fade
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="dynamic"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            Dynamic
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="media-stack"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            MediaStack
-                        </ToggleGroupItem>
-                        <ToggleGroupItem
-                            value="ai"
-                            className="bg-transparent data-[state=on]:bg-background"
-                        >
-                            AI made this
-                        </ToggleGroupItem>
-                    </ToggleGroup>
-                </div>
+        <div>
+            <div className="mb-8 text-center">
+                <h2 className="text-2xl font-bold text-white">Choose Your Theme</h2>
+                <p className="mt-2 text-gray-400">
+                    Browse available themes and styles for your overlay
+                </p>
             </div>
 
-            {/* Grid for Overlays */}
             <div
                 className={cn(
                     "grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3",
@@ -217,205 +73,149 @@ export default function ThemeShowcase({ dialog }: { dialog?: boolean }) {
                 {Object.entries(themes).map(([themeName, theme], index) => (
                     <div
                         key={index}
-                        className="space-y-4 rounded-xl border-2 bg-card p-2"
+                        className="space-y-4 rounded-xl border border-white/[0.08] bg-white/[0.03] p-4"
                     >
-                        {/* Display the Author if available */}
                         <div className="flex items-center justify-between">
-                            {themeName && (
-                                <div className="text-lg font-bold text-white">
-                                    Theme: {themeName}
-                                </div>
-                            )}
+                            <div className="text-lg font-semibold text-white">
+                                {themeName}
+                            </div>
                             {theme?.author && (
-                                <div className="text-white">
-                                    <span className="text-left font-bold">
-                                        Author:{" "}
-                                    </span>
-                                    {theme.author}
+                                <div className="text-sm text-gray-400">
+                                    by {theme.author}
                                 </div>
                             )}
                         </div>
 
-                        <Tabs
-                            defaultValue="standard"
-                            className="w-full"
-                            // Apply global view mode if it exists, otherwise keep the current value
-                            value={globalViewMode || undefined}
-                            onValueChange={() => {
-                                // Clear global view mode when a user interacts with individual tabs
-                                setGlobalViewMode(null);
-                            }}
-                        >
-                            <TabsList className="mb-4">
-                                <TabsTrigger value="standard">
+                        <Tabs defaultValue="standard" className="w-full">
+                            <TabsList className="mb-4 bg-white/[0.05]">
+                                <TabsTrigger value="standard" className="data-[state=active]:bg-white/10">
                                     Standard
                                 </TabsTrigger>
-                                <TabsTrigger value="minimal">Bar</TabsTrigger>
-                                <TabsTrigger value="animated">
+                                <TabsTrigger value="minimal" className="data-[state=active]:bg-white/10">
+                                    Bar
+                                </TabsTrigger>
+                                <TabsTrigger value="animated" className="data-[state=active]:bg-white/10">
                                     Animated
                                 </TabsTrigger>
-                                <TabsTrigger value="fade">Fade</TabsTrigger>
-                                <TabsTrigger value="dynamic">
+                                <TabsTrigger value="fade" className="data-[state=active]:bg-white/10">
+                                    Fade
+                                </TabsTrigger>
+                                <TabsTrigger value="dynamic" className="data-[state=active]:bg-white/10">
                                     Dynamic
                                 </TabsTrigger>
-                                <TabsTrigger value="media-stack">
+                                <TabsTrigger value="media-stack" className="data-[state=active]:bg-white/10">
                                     MediaStack
                                 </TabsTrigger>
-                                <TabsTrigger value="ai">
-                                    AI made this
+                                <TabsTrigger value="ai" className="data-[state=active]:bg-white/10">
+                                    AI
                                 </TabsTrigger>
                             </TabsList>
+
                             <TabsContent value="standard">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "default",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
-                                {/* Spotify Overlay */}
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("default", themeName)}
+                                    </code>
+                                )}
                                 <div className="flex flex-col justify-center">
                                     <SpotifyOverlay
                                         nowPlaying={song}
                                         theme={themeName as keyof typeof themes}
-                                        showTimestamp={showTimestamp}
                                         showCase
                                     />
                                 </div>
                             </TabsContent>
+
                             <TabsContent value="minimal">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "minimalBar",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
-                                {/* Minimal Bar Overlay */}
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("minimalBar", themeName)}
+                                    </code>
+                                )}
                                 <MinimalBarOverlay
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
-                                    showTimestamp={showTimestamp}
                                     showCase
                                 />
                             </TabsContent>
+
                             <TabsContent value="animated">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "animated",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
-                                {/* Animated Overlay */}
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("animated", themeName)}
+                                    </code>
+                                )}
                                 <div className="flex justify-center">
                                     <AnimatedOverlay
                                         nowPlaying={song}
                                         theme={themeName as keyof typeof themes}
-                                        showTimestamp={showTimestamp}
                                         showCase
                                     />
                                 </div>
                             </TabsContent>
+
                             <TabsContent value="fade">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "fade",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("fade", themeName)}
+                                    </code>
+                                )}
                                 <SpotifyOverlayFade
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
-                                    showTimestamp={showTimestamp}
                                     showCase
                                 />
                             </TabsContent>
+
                             <TabsContent value="dynamic">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "dynamic",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("dynamic", themeName)}
+                                    </code>
+                                )}
                                 <SpotifyOverlayDynamic
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
-                                    showTimestamp={showTimestamp}
                                     showCase
                                 />
                             </TabsContent>
+
                             <TabsContent value="media-stack">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "media-stack",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("media-stack", themeName)}
+                                    </code>
+                                )}
                                 <SpotifyOverlayMediaStack
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
-                                    showTimestamp={showTimestamp}
                                     showCase
                                 />
                             </TabsContent>
+
                             <TabsContent value="ai">
-                                <span className="my-2 block text-white">
-                                    {rootDomain?.length === 0 ? (
-                                        <Skeleton className="h-6 w-full" />
-                                    ) : (
-                                        <code className="rounded bg-muted px-2 py-1">
-                                            {generateOverlayURL(
-                                                "ai",
-                                                themeName,
-                                                showTimestamp
-                                            )}
-                                        </code>
-                                    )}
-                                </span>
+                                {rootDomain?.length === 0 ? (
+                                    <Skeleton className="h-6 w-full" />
+                                ) : (
+                                    <code className="mb-2 block rounded bg-black/30 px-2 py-1 text-xs text-gray-400">
+                                        {generateOverlayURL("ai", themeName)}
+                                    </code>
+                                )}
                                 <SpotifyOverlayAI
                                     nowPlaying={song}
                                     theme={themeName as keyof typeof themes}
-                                    showTimestamp={showTimestamp}
                                     showCase
                                 />
                             </TabsContent>

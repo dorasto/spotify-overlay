@@ -41,6 +41,11 @@ export async function GET(
                 position: "bottom-right",
                 autoHide: false,
                 showTimestamp: false,
+                customPosition: {
+                    x: 0,
+                    y: 0,
+                    scale: 1,
+                },
             },
         });
     }
@@ -93,6 +98,11 @@ export async function GET(
             position: config.overlayPosition ?? "bottom-right",
             autoHide: config.autoHide ?? false,
             showTimestamp: config.showTimestamp ?? false,
+            customPosition: {
+                x: config.customX ?? 0,
+                y: config.customY ?? 0,
+                scale: config.customScale ?? 1,
+            },
         },
     });
 }

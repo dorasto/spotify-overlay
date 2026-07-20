@@ -1,4 +1,4 @@
-import { pgTable, text, boolean, timestamp } from "drizzle-orm/pg-core";
+import { pgTable, text, boolean, timestamp, integer, real } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
     id: text("id").primaryKey(),
@@ -70,6 +70,9 @@ export const userConfig = pgTable("user_config", {
     overlayPosition: text("overlayPosition").default("bottom-right"),
     autoHide: boolean("autoHide").default(false),
     showTimestamp: boolean("showTimestamp").default(false),
+    customX: integer("customX").default(0),
+    customY: integer("customY").default(0),
+    customScale: real("customScale").default(1),
     createdAt: timestamp("createdAt").notNull(),
     updatedAt: timestamp("updatedAt").notNull(),
 });

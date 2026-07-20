@@ -38,7 +38,7 @@ export default function SpotifyCallback({
                 toast.error("Failed to connect Spotify");
             } finally {
                 setProcessing(false);
-                router.push("/dashboard?tab=spotify");
+                router.push("/dashboard");
             }
         };
 

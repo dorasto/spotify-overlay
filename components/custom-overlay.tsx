@@ -1,10 +1,11 @@
 "use client";
-
-import { useEffect, useState, useRef } from "react";
-import { useSearchParams } from "next/navigation";
 import SpotifyOverlayMiddle from "@/components/spotify-overlay";
-import TwitchBotChat from "@/components/twitch";
+import Zoom from "@/components/zoom";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useOverlaySSE } from "@/hooks/use-overlay-sse";
+import TwitchBotChat from "./twitch";
+
 
 interface SpotifyConfig {
     accessToken: string | null;
@@ -42,7 +43,7 @@ interface FetchedConfig {
     twitchUsername: string | null;
 }
 
-export default function OverlayClient() {
+export default function CustomOverlayEditorNew() {
     const searchParams = useSearchParams();
     const overlayToken = searchParams.get("overlayToken");
 
@@ -113,12 +114,20 @@ export default function OverlayClient() {
 
     const serverConfig = {
         user: { id: "", overlayToken },
-        config: config.overlay,
+        config: { ...config.overlay, position: "bottom-right" },
         spotify: config.spotify,
     };
 
+    const style = {
+        top: serverConfig.config.customPosition?.y,
+        left: serverConfig.config.customPosition?.x,
+        willChange: "transform",
+        transform: `scale(${serverConfig.config.customPosition?.scale})`,
+    }
+
     return (
-        <>
+        <div className="w-full">
+            <Zoom />
             {config.twitch?.enabled && config.twitchUsername && (
                 <TwitchBotChat
                     twitchToken={config.twitch.accessToken || ""}
@@ -132,9 +141,9 @@ export default function OverlayClient() {
                     overlayToken={overlayToken || ""}
                 />
             )}
-            <div className="absolute">
+            <div className="absolute" style={style}>
                 <SpotifyOverlayMiddle serverConfig={serverConfig} />
             </div>
-        </>
+        </div>
     );
 }

@@ -26,6 +26,11 @@ interface ServerConfig {
         refreshToken: string | null;
         tokenExpiresAt: number | null;
     } | null;
+    customPosition?: {
+        x: number;
+        y: number;
+        scale: number;
+    };
 }
 
 export default function SpotifyOverlayMiddle({
@@ -300,7 +305,8 @@ export default function SpotifyOverlayMiddle({
             raw_duration_ms: parseInt(nowPlaying.item.duration_ms),
         },
     };
-    return renderOverlay({
+
+    const overlayContent = renderOverlay({
         style,
         position,
         _position,
@@ -311,6 +317,25 @@ export default function SpotifyOverlayMiddle({
         background,
         queue,
     });
+
+    const customPos = serverConfig?.customPosition;
+    if (customPos !== undefined) {
+        return (
+            <div
+                style={{
+                    position: "absolute",
+                    left: customPos.x,
+                    top: customPos.y,
+                    transform: `scale(${customPos.scale})`,
+                    transformOrigin: "top left",
+                }}
+            >
+                {overlayContent}
+            </div>
+        );
+    }
+
+    return overlayContent;
 }
 
 function renderOverlay({

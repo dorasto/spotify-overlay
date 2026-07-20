@@ -1,9 +1,11 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import DashboardClient from "./dashboard-client";
+import AdminClient from "./admin-client";
 
-export default async function DashboardPage() {
+export const runtime = "nodejs";
+
+export default async function AdminPage() {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -13,7 +15,9 @@ export default async function DashboardPage() {
     }
 
     const adminId = process.env.ADMIN_USER_ID;
-    const isAdmin = !!adminId && session.user.id === adminId;
+    if (!adminId || session.user.id !== adminId) {
+        redirect("/dashboard");
+    }
 
-    return <DashboardClient user={session.user} isAdmin={isAdmin} />;
+    return <AdminClient user={session.user} />;
 }

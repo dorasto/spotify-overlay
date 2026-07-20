@@ -8,6 +8,11 @@ interface OverlayConfig {
     position: string;
     autoHide: boolean;
     showTimestamp: boolean;
+    customPosition?: {
+        x: number;
+        y: number;
+        scale: number;
+    };
 }
 
 interface SSEMessage {

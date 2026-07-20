@@ -26,11 +26,18 @@ interface OverlayConfig {
     showTimestamp: boolean;
 }
 
+interface CustomPosition {
+    x: number;
+    y: number;
+    scale: number;
+}
+
 export interface UserConfig {
     overlayToken: string | null;
     spotify: SpotifyConfig | null;
     twitch: TwitchConfig | null;
     overlay: OverlayConfig;
+    customPosition: CustomPosition;
 }
 
 export function useUserConfig() {

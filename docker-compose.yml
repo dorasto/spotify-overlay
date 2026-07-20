@@ -3,9 +3,9 @@ services:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
+      POSTGRES_PASSWORD: postgres_music_overlay
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-db:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
@@ -18,7 +18,7 @@ services:
     ports:
       - "${PORT:-3000}:3000"
     environment:
-      - DATABASE_URL=postgres://postgres:postgres@postgres:5432
+      - DATABASE_URL=postgres://postgres:postgres_music_overlay@postgres:5432
       - NEXT_PUBLIC_ROOT_DOMAIN=${NEXT_PUBLIC_ROOT_DOMAIN:-http://localhost:3000}
       - ROOT_DOMAIN=${ROOT_DOMAIN:-http://localhost:3000}
       - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
@@ -27,10 +27,11 @@ services:
       - TWITCH_CLIENT_SECRET=${TWITCH_CLIENT_SECRET}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:3000}
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - ADMIN_USER_ID=${ADMIN_USER_ID}
     depends_on:
       postgres:
         condition: service_healthy
     restart: unless-stopped
 
 volumes:
-  postgres-data:
+  postgres-db:

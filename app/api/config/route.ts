@@ -25,13 +25,9 @@ export async function GET() {
         where: eq(user.id, session.user.id),
     });
 
-    const twitchAccount = await db.query.account.findFirst({
-        where: (a, { and, eq }) => and(eq(a.userId, session.user.id), eq(a.providerId, "twitch")),
-    });
-
-
     if (!config) {
         return NextResponse.json({
+            id: userData?.id,
             overlayToken: userData?.overlayToken,
             spotify: null,
             twitch: null,
@@ -41,6 +37,11 @@ export async function GET() {
                 position: "bottom-right",
                 autoHide: false,
                 showTimestamp: false,
+            },
+            customPosition: {
+                x: 0,
+                y: 0,
+                scale: 1,
             },
         });
     }
@@ -60,6 +61,7 @@ export async function GET() {
     }
 
     return NextResponse.json({
+        id: userData?.id,
         overlayToken: userData?.overlayToken,
         spotify: {
             accessToken: spotifyAccessToken,
@@ -79,6 +81,11 @@ export async function GET() {
             position: config.overlayPosition ?? "bottom-right",
             autoHide: config.autoHide ?? false,
             showTimestamp: config.showTimestamp ?? false,
+        },
+        customPosition: {
+            x: config.customX ?? 0,
+            y: config.customY ?? 0,
+            scale: config.customScale ?? 1,
         },
     });
 }

@@ -75,6 +75,15 @@ export async function POST(request: NextRequest) {
             data.twitchEnableSrCommand = body.twitch.enableSrCommand;
     }
 
+    if (body.customPosition) {
+        if (body.customPosition.x !== undefined)
+            data.customX = body.customPosition.x;
+        if (body.customPosition.y !== undefined)
+            data.customY = body.customPosition.y;
+        if (body.customPosition.scale !== undefined)
+            data.customScale = body.customPosition.scale;
+    }
+
     if (existing) {
         await db
             .update(userConfig)
@@ -92,7 +101,12 @@ export async function POST(request: NextRequest) {
 
     const broadcastData = {
         type: "config-update",
-        overlay: body.overlay || {},
+        overlay: body.overlay
+            ? {
+                ...body.overlay,
+                customPosition: body.customPosition,
+            }
+            : {},
     };
 
     if (userData?.overlayToken) {

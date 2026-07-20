@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import PreviewClient from "./preview-client";
+import CustomClient from "./custom-client";
 
-export default async function PreviewPage() {
+export default async function CustomPage() {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
@@ -12,5 +12,5 @@ export default async function PreviewPage() {
         redirect("/");
     }
 
-    return <PreviewClient user={session.user} />;
+    return <CustomClient user={session.user} />;
 }
