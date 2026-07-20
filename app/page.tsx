@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { IconBrandTwitch, IconDashboard, IconMusic, IconMessageCircle, IconPalette } from "@tabler/icons-react";
+import TwitchLogin from "@/components/twitch-login";
 
 export default async function Page() {
     const session = await auth.api.getSession({
@@ -36,12 +37,7 @@ export default async function Page() {
                                     </Button>
                                 </Link>
                             ) : (
-                                <Link href="/connect/twitch">
-                                    <Button className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-lg">
-                                        <IconBrandTwitch className="mr-2 h-5 w-5" />
-                                        Sign in with Twitch
-                                    </Button>
-                                </Link>
+                                <TwitchLogin />
                             )}
                         </div>
                     </div>
