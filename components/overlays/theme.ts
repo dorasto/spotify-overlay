@@ -593,4 +593,22 @@ export const themes = {
         text: "text-fuchsia-100",
         timestampText: "text-cyan-300",
     },
+    "neon-rainbow-border": {
+        author: "AI",
+        card: "bg-zinc-900 text-white rounded-xl border border-transparent [background:linear-gradient(#18181b,#18181b)_padding-box,conic-gradient(from_var(--border-angle),#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#eab308,#84cc16,#22d3ee)_border-box] rainbow-border-speed",
+        avatarBorder: "border",
+        avatarFallback: "bg-red-700",
+        badge: "bg-gray-900 text-white",
+        text: "text-white",
+        timestampText: "text-zinc-400",
+    },
+    "neon-rainbow-border-full": {
+        author: "AI",
+        card: "bg-zinc-900 text-white rounded-xl border border-transparent [background:linear-gradient(#18181b,#18181b)_padding-box,conic-gradient(from_var(--border-angle),#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#eab308,#84cc16,#22d3ee)_border-box] rainbow-border-speed",
+        avatarBorder: "border border-transparent [background:linear-gradient(#18181b,#18181b)_padding-box,conic-gradient(from_var(--border-angle),#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#eab308,#84cc16,#22d3ee)_border-box] rainbow-border-speed",
+        avatarFallback: "bg-red-700",
+        badge: "bg-gray-900 text-white",
+        text: "text-white",
+        timestampText: "text-zinc-400",
+    },
 };

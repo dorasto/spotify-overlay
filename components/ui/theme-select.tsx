@@ -78,6 +78,8 @@ const themeColors: Record<string, string> = {
     "midnight-teal": "bg-gradient-to-r from-teal-900 to-black",
     "glitch-red": "bg-gradient-to-r from-red-600 via-black to-red-600",
     "midnight-synth": "bg-gradient-to-br from-black to-cyan-900",
+    "neon-rainbow-border": "bg-zinc-900 text-white rounded-xl border border-transparent [background:linear-gradient(#18181b,#18181b)_padding-box,conic-gradient(from_var(--border-angle),#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#eab308,#84cc16,#22d3ee)_border-box] rainbow-border-speed",
+    "neon-rainbow-border-full": "bg-zinc-900 text-white rounded-xl border border-transparent [background:linear-gradient(#18181b,#18181b)_padding-box,conic-gradient(from_var(--border-angle),#22d3ee,#3b82f6,#a855f7,#ec4899,#f59e0b,#eab308,#84cc16,#22d3ee)_border-box] rainbow-border-speed"
 };
 
 export function ThemeSelect({ value, onValueChange }: ThemeSelectProps) {

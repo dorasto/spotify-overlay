@@ -343,11 +343,11 @@ export default function CustomClient({ user }: CustomClientProps) {
                         background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
                     }}
                 >
-                    <div className="absolute top-4 left-4 flex items-center gap-2 z-1 pointer-events-none">
+                    <div className="absolute top-4 left-4 flex items-center gap-2 z-1 pointer-events-none select-none">
                         <div className="h-2.5 w-2.5 rounded-full bg-red-500 animate-pulse" />
                         <span className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Live</span>
                     </div>
-                    <div className="absolute top-4 right-4 flex items-center gap-2 z-1 pointer-events-none">
+                    <div className="absolute top-4 right-4 flex items-center gap-2 z-1 pointer-events-none select-none">
                         <div className="h-6 w-6 rounded-full bg-white/10 flex items-center justify-center">
                             <div className="h-3 w-3 rounded-full bg-gray-600" />
                         </div>
@@ -364,7 +364,7 @@ export default function CustomClient({ user }: CustomClientProps) {
 
                     {/* Overlay - draggable */}
                     <div
-                        className="absolute inset-0"
+                        className="absolute inset-0 select-none"
                         style={{ cursor: isDragging ? "grabbing" : isScaling ? "nesw-resize" : "grab" }}
                         onMouseDown={handleMouseDown}
                     >
