@@ -28,6 +28,8 @@ import SpotifyOverlayAI from "@/components/overlays/Ai";
 import { StyleSelect } from "@/components/ui/style-select";
 import { ThemeSelect } from "@/components/ui/theme-select";
 import { PositionSelect } from "@/components/ui/position-select";
+import SpotifyOverlayClean from "@/components/overlays/clean";
+import { DeleteAccount } from "./deleteAccount";
 
 interface DashboardClientProps {
     user: {
@@ -75,6 +77,8 @@ function OverlayPreview({ style, theme, showTimestamp }: {
             return <SpotifyOverlayMediaStack nowPlaying={dummySong} showTimestamp={showTimestamp} theme={themeKey} showCase />;
         case "ai":
             return <SpotifyOverlayAI nowPlaying={dummySong} showTimestamp={showTimestamp} theme={themeKey} showCase />;
+        case "clean":
+            return <SpotifyOverlayClean nowPlaying={dummySong} showTimestamp={showTimestamp} theme={themeKey} showCase />;
         default:
             return <SpotifyOverlay nowPlaying={dummySong} showTimestamp={showTimestamp} theme={themeKey} showCase />;
     }
@@ -529,6 +533,7 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
                                 </div>
                             </CardContent>
                         </Card>
+                        <DeleteAccount />
                     </TabsContent>
                 </Tabs>
             </div>

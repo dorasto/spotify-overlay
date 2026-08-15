@@ -2,6 +2,6 @@ import { createAuthClient } from "better-auth/react";
 
 export const authClient = createAuthClient();
 
-export const { signIn, signUp, signOut, useSession } = authClient;
+export const { signIn, signUp, signOut, useSession, deleteUser } = authClient;
 
 export const signInWithTwitch = () => signIn.social({ provider: "twitch", callbackURL: "/dashboard" });

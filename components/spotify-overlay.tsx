@@ -17,6 +17,7 @@ import SpotifyOverlayMediaStack from "./overlays/MediaStack";
 import SpotifyOverlayAI from "./overlays/Ai";
 import { themes } from "./overlays/theme";
 import { positionClasses } from "./overlays/positions";
+import SpotifyOverlayClean from "./overlays/clean";
 
 interface ServerConfig {
     user: { id: string; overlayToken: string | null };
@@ -416,6 +417,15 @@ function renderOverlay({
         case "ai":
             return (
                 <SpotifyOverlayAI
+                    nowPlaying={newNowPlaying}
+                    showTimestamp={showTimestamp}
+                    theme={theme}
+                    position={_position ?? position}
+                />
+            );
+        case "clean":
+            return (
+                <SpotifyOverlayClean
                     nowPlaying={newNowPlaying}
                     showTimestamp={showTimestamp}
                     theme={theme}

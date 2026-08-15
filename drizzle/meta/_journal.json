@@ -15,6 +15,13 @@
       "when": 1784527060575,
       "tag": "0001_loud_sentinel",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786804048222,
+      "tag": "0002_mean_lily_hollister",
+      "breakpoints": true
     }
   ]
 }

@@ -22,6 +22,17 @@ export const auth = betterAuth({
       scope: ["chat:read", "chat:edit"]
     },
   },
+  user: {
+    additionalFields: {
+      enabled: {
+        type: "boolean",
+        input: false
+      }
+    },
+    deleteUser: {
+      enabled: true,
+    }
+  },
   databaseHooks: {
     user: {
       create: {
@@ -29,7 +40,7 @@ export const auth = betterAuth({
           const overlayToken = `ovl_${crypto.randomBytes(32).toString("hex")}`;
           await db
             .update(schema.user)
-            .set({ overlayToken })
+            .set({ overlayToken, enabled: false })
             .where(eq(schema.user.id, user.id));
         },
       },

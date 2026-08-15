@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { db } from "@/lib/db";
-import { user, userConfig, account } from "@/lib/db/schema";
-import { eq, sql, count } from "drizzle-orm";
 
 export const runtime = "nodejs";
 
@@ -43,6 +41,7 @@ export async function GET() {
             hasTwitch,
             overlayStyle: config?.overlayStyle ?? null,
             overlayTheme: config?.overlayTheme ?? null,
+            enabled: u.enabled,
         };
     });
 

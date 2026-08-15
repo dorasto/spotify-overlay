@@ -28,6 +28,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Music } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { themes } from "@/components/overlays/theme";
+import { Switch } from "@/components/ui/switch";
 
 interface AdminUser {
     id: string;
@@ -39,6 +40,7 @@ interface AdminUser {
     hasTwitch: boolean;
     overlayStyle: string | null;
     overlayTheme: string | null;
+    enabled: boolean;
 }
 
 interface AdminStats {
@@ -61,6 +63,7 @@ export default function AdminClient({ user }: AdminClientProps) {
     const [users, setUsers] = useState<AdminUser[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
+    const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchAdminData();
@@ -78,6 +81,38 @@ export default function AdminClient({ user }: AdminClientProps) {
             setUsers([]);
         } finally {
             setLoading(false);
+        }
+    };
+    const toggleAccount = async (userId: string, enabled: boolean) => {
+        setUpdatingUserId(userId);
+
+        try {
+            const response = await fetch("/api/admin/users/access", {
+                method: "PATCH",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userId,
+                    enabled,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to update account");
+            }
+
+            setUsers((currentUsers) =>
+                currentUsers.map((currentUser) =>
+                    currentUser.id === userId
+                        ? { ...currentUser, enabled }
+                        : currentUser,
+                ),
+            );
+        } catch {
+            alert("Failed to update account access");
+        } finally {
+            setUpdatingUserId(null);
         }
     };
 
@@ -235,6 +270,7 @@ export default function AdminClient({ user }: AdminClientProps) {
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider">Overlay</TableHead>
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider">Theme</TableHead>
                                     <TableHead className="text-gray-500 text-xs font-medium uppercase tracking-wider text-right">Joined</TableHead>
+                                    <TableHead className="text-xs font-medium uppercase tracking-wider text-gray-500">Access</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -321,6 +357,28 @@ export default function AdminClient({ user }: AdminClientProps) {
                                                 <span className="text-sm text-gray-500 tabular-nums">
                                                     {formatDistanceToNow(new Date(u.createdAt), { addSuffix: true })}
                                                 </span>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="flex items-center gap-2">
+                                                    <Switch
+                                                        checked={u.enabled}
+                                                        disabled={updatingUserId === u.id || u.id === user.id}
+                                                        onCheckedChange={(enabled) =>
+                                                            toggleAccount(u.id, enabled)
+                                                        }
+                                                        className="data-[state=checked]:bg-emerald-500"
+                                                    />
+
+                                                    <span
+                                                        className={
+                                                            u.enabled
+                                                                ? "text-xs text-emerald-400"
+                                                                : "text-xs text-gray-500"
+                                                        }
+                                                    >
+                                                        {u.enabled ? "Enabled" : "Disabled"}
+                                                    </span>
+                                                </div>
                                             </TableCell>
                                         </TableRow>
                                     ))

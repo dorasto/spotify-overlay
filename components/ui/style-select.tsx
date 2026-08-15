@@ -23,6 +23,7 @@ const styles: StyleOption[] = [
     { value: "dynamic", label: "Dynamic" },
     { value: "media-stack", label: "Media Stack" },
     { value: "ai", label: "AI" },
+    { value: "clean", label: "Clean" },
 ];
 
 const stylePreviews: Record<string, string> = {

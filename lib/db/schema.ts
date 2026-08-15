@@ -9,6 +9,7 @@ export const user = pgTable("user", {
     overlayToken: text("overlayToken").unique(),
     createdAt: timestamp("createdAt").notNull(),
     updatedAt: timestamp("updatedAt").notNull(),
+    enabled: boolean("enabled").default(true).notNull()
 });
 
 export const session = pgTable("session", {
