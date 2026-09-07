@@ -8,7 +8,6 @@ export default async function DashboardPage() {
     const session = await auth.api.getSession({
         headers: await headers(),
     });
-    console.log("🚀 ~ DashboardPage ~ session:", session)
     if (!session?.user) {
         redirect("/");
     }

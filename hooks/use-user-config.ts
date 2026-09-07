@@ -38,6 +38,7 @@ export interface UserConfig {
     twitch: TwitchConfig | null;
     overlay: OverlayConfig;
     customPosition: CustomPosition;
+    dvd: string;
 }
 
 export function useUserConfig() {

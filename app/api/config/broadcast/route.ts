@@ -84,6 +84,10 @@ export async function POST(request: NextRequest) {
             data.customScale = body.customPosition.scale;
     }
 
+    if (body.dvd !== undefined) {
+        data.dvd = body.dvd;
+    }
+
     if (existing) {
         await db
             .update(userConfig)

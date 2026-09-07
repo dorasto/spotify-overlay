@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { IconBrandSpotify, IconBrandTwitch, IconCopy, IconCheck, IconLogout, IconLink, IconEye, IconShield, IconSettings, IconPalette, IconPlayerPlay } from "@tabler/icons-react";
-import { useState, useEffect } from "react";
+import { IconBrandSpotify, IconBrandTwitch, IconCopy, IconCheck, IconLogout, IconLink, IconEye, IconShield, IconSettings, IconPalette, IconPlayerPlay, IconUpload, IconX } from "@tabler/icons-react";
+import { useState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { signOut } from "@/lib/auth-client";
 import { themes } from "@/components/overlays/theme";
@@ -103,6 +103,10 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
     const [twitchEnableQueueCommand, setTwitchEnableQueueCommand] = useState(true);
     const [twitchEnableSrCommand, setTwitchEnableSrCommand] = useState(true);
 
+    const [dvdImage, setDvdImage] = useState<string>("/favicon.ico");
+    const [dvdCopied, setDvdCopied] = useState(false);
+    const dvdFileInputRef = useRef<HTMLInputElement>(null);
+
     useEffect(() => {
         const tab = searchParams.get("tab");
         if (tab) {
@@ -124,6 +128,9 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
             setTwitchEnableSongCommand(config.twitch.enableSongCommand ?? true);
             setTwitchEnableQueueCommand(config.twitch.enableQueueCommand ?? true);
             setTwitchEnableSrCommand(config.twitch.enableSrCommand ?? true);
+        }
+        if (config?.dvd) {
+            setDvdImage(config.dvd);
         }
     }, [config]);
 
@@ -193,6 +200,41 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
         }
     };
 
+    const copyDvdUrl = async () => {
+        if (!config?.overlayToken) {
+            toast.error("No overlay token available");
+            return;
+        }
+        const url = `${window.location.origin}/dvd?overlayToken=${config.overlayToken}`;
+        try {
+            await navigator.clipboard.writeText(url);
+            setDvdCopied(true);
+            toast.success("DVD URL copied to clipboard");
+            setTimeout(() => setDvdCopied(false), 2000);
+        } catch {
+            toast.error("Failed to copy");
+        }
+    };
+
+    const handleDvdImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = async (ev) => {
+            const dataUrl = ev.target?.result as string;
+            setDvdImage(dataUrl);
+            await saveConfig({ dvd: dataUrl } as any);
+            toast.success("DVD image saved");
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleRemoveDvdImage = async () => {
+        setDvdImage("/favicon.ico");
+        await saveConfig({ dvd: "/favicon.ico" } as any);
+        toast.success("DVD image reset to default");
+    };
+
     const handleSignOut = async () => {
         await signOut();
         window.location.href = "/";
@@ -252,10 +294,14 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
 
             <div className="mx-auto max-w-7xl px-6 py-8">
                 <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                    <TabsList className="h-11 w-full grid grid-cols-4 bg-white/[0.03] border border-white/[0.06] p-1 rounded-xl">
+                    <TabsList className="h-11 w-full grid grid-cols-5 bg-white/[0.03] border border-white/[0.06] p-1 rounded-xl">
                         <TabsTrigger value="overlay" className="rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">
                             <IconPalette className="mr-2 h-4 w-4" />
                             Overlay
+                        </TabsTrigger>
+                        <TabsTrigger value="dvd" className="rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">
+                            <IconPlayerPlay className="mr-2 h-4 w-4" />
+                            DVD
                         </TabsTrigger>
                         <TabsTrigger value="spotify" className="rounded-lg data-[state=active]:bg-white/10 data-[state=active]:text-white text-gray-400">
                             <IconBrandSpotify className="mr-2 h-4 w-4" />
@@ -509,6 +555,84 @@ export default function DashboardClient({ user, isAdmin = false }: DashboardClie
                                 <Button onClick={handleSaveTwitchSettings} className="w-full bg-purple-600 hover:bg-purple-500 text-white font-medium">
                                     Save Twitch Settings
                                 </Button>
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+
+                    {/* DVD Tab */}
+                    <TabsContent value="dvd" className="space-y-6">
+                        <Card className="bg-white/[0.03] border-white/[0.06]">
+                            <CardHeader>
+                                <CardTitle className="text-white text-base flex items-center gap-2">
+                                    <IconPlayerPlay className="h-4 w-4 text-purple-400" />
+                                    DVD Bouncing Screensaver
+                                </CardTitle>
+                                <CardDescription className="text-gray-500 text-sm">
+                                    Classic DVD bouncing logo with your custom image
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-16 w-16 rounded-lg bg-black/50 border border-white/[0.08] flex items-center justify-center overflow-hidden">
+                                        <img
+                                            src={dvdImage}
+                                            alt="DVD logo"
+                                            className="h-full w-full object-contain"
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <input
+                                            ref={dvdFileInputRef}
+                                            type="file"
+                                            accept="image/*"
+                                            className="hidden"
+                                            onChange={handleDvdImageUpload}
+                                        />
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                onClick={() => dvdFileInputRef.current?.click()}
+                                                className="bg-white/[0.03] border-white/[0.08] hover:bg-white/[0.06] text-gray-300 text-xs"
+                                            >
+                                                <IconUpload className="mr-1.5 h-3.5 w-3.5" />
+                                                Upload Image
+                                            </Button>
+                                            {dvdImage !== "/favicon.ico" && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    onClick={handleRemoveDvdImage}
+                                                    className="bg-red-500/10 border-red-500/20 text-red-400 hover:bg-red-500/20 text-xs"
+                                                >
+                                                    <IconX className="mr-1.5 h-3.5 w-3.5" />
+                                                    Reset
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center justify-between pt-2 border-t border-white/[0.06]">
+                                    <div>
+                                        <CardTitle className="text-white text-xs font-medium">DVD URL</CardTitle>
+                                        <CardDescription className="text-gray-500 text-[10px] mt-0.5">
+                                            Add as Browser Source in OBS for bouncing screensaver
+                                        </CardDescription>
+                                    </div>
+                                    <Button onClick={copyDvdUrl} size="sm" className="bg-purple-500/15 border border-purple-500/20 text-purple-400 hover:bg-purple-500/25 text-xs">
+                                        {dvdCopied ? (
+                                            <>
+                                                <IconCheck className="mr-1.5 h-3.5 w-3.5" />
+                                                Copied
+                                            </>
+                                        ) : (
+                                            <>
+                                                <IconCopy className="mr-1.5 h-3.5 w-3.5" />
+                                                Copy URL
+                                            </>
+                                        )}
+                                    </Button>
+                                </div>
                             </CardContent>
                         </Card>
                     </TabsContent>

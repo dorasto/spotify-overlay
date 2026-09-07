@@ -43,6 +43,7 @@ export async function GET() {
                 y: 0,
                 scale: 1,
             },
+            dvd: "/favicon.ico",
         });
     }
 
@@ -87,5 +88,6 @@ export async function GET() {
             y: config.customY ?? 0,
             scale: config.customScale ?? 1,
         },
+        dvd: config.dvd ?? "/favicon.ico",
     });
 }

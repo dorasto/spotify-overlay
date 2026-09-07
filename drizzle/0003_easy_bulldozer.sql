@@ -1,0 +1,1 @@
+ALTER TABLE "user_config" ADD COLUMN "dvd" text DEFAULT '/favicon.ico';

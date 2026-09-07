@@ -76,4 +76,5 @@ export const userConfig = pgTable("user_config", {
     customScale: real("customScale").default(1),
     createdAt: timestamp("createdAt").notNull(),
     updatedAt: timestamp("updatedAt").notNull(),
+    dvd: text("dvd").default("/favicon.ico"),
 });

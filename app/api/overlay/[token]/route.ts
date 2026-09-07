@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { userConfig, user, account } from "@/lib/db/schema";
+import { userConfig, user } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { decrypt } from "@/lib/encryption";
 
@@ -47,6 +47,7 @@ export async function GET(
                     scale: 1,
                 },
             },
+            dvd: "/favicon.ico",
         });
     }
 
@@ -104,5 +105,6 @@ export async function GET(
                 scale: config.customScale ?? 1,
             },
         },
+        dvd: config.dvd ?? "/favicon.ico",
     });
 }
